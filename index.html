@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#116466">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="장기투자 노트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>미국주식 장기투자 노트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-column phone app. Sticky date header, scrolling content, fixed five-tab bar.
+   Lists use hairline dividers; cards are reserved for the daily brief and journal entries.
+   Up/down follow the Korean convention (red up, blue down); the accent is a deep teal so it never reads as a price move. */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --surface-2:#E8EEEC; --fg:#17201F; --muted:#5F6D6A; --line:#D5DDDA;
+  --accent:#116466; --accent-soft:#D6E8E7; --accent-fg:#FFFFFF;
+  --up:#D23F3F; --down:#2A62C9; --good:#2C7A4B; --warn:#A8690F; --bad:#C23B3B;
+  --good-soft:#DCEFE3; --warn-soft:#F6E7CC; --bad-soft:#F6DADA;
+  --font-body:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#171F1E; --surface-2:#1F2A28; --fg:#E7EDEB; --muted:#93A19E; --line:#2A3735;
+    --accent:#56B8B4; --accent-soft:#1D3331; --accent-fg:#06201F;
+    --up:#F07070; --down:#7AA6F2; --good:#63C48C; --warn:#E0A64B; --bad:#F07070;
+    --good-soft:#1C3327; --warn-soft:#3A2E16; --bad-soft:#3B1F1F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#171F1E; --surface-2:#1F2A28; --fg:#E7EDEB; --muted:#93A19E; --line:#2A3735;
+  --accent:#56B8B4; --accent-soft:#1D3331; --accent-fg:#06201F;
+  --up:#F07070; --down:#7AA6F2; --good:#63C48C; --warn:#E0A64B; --bad:#F07070;
+  --good-soft:#1C3327; --warn-soft:#3A2E16; --bad-soft:#3B1F1F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:22px;font-weight:700}
+h2{font-size:16px;font-weight:700}
+h3{font-size:14px;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+textarea{resize:vertical;min-height:72px}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-inner{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:12px 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.icon-btn{background:none;border:1px solid var(--line);border-radius:999px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer;color:var(--muted);flex:none}
+.icon-btn svg{width:18px;height:18px}
+
+/* main */
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(84px + env(safe-area-inset-bottom,0px));max-width:720px;margin:0 auto}
+.tab{display:flex;flex-direction:column;gap:22px}
+.block{display:flex;flex-direction:column;gap:10px;min-width:0}
+.block-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.hint{font-size:13px;color:var(--muted)}
+.status-line{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-line .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.status-line .dot.ok{background:var(--good)}
+.status-line .dot.bad{background:var(--bad)}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .headline{font-size:17px;font-weight:700;line-height:1.35}
+.idx{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.idx .k{font-size:12px;color:var(--muted)}
+.idx .v{font-size:16px;font-weight:500}
+.idx .chg{font-size:12px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.kv .k{font-size:12px;color:var(--muted)}
+.kv .v{font-size:14px;font-weight:500}
+.up{color:var(--up)}.down{color:var(--down)}
+.themes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.meta{font-size:12px;color:var(--muted)}
+
+/* pills / chips */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid transparent;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neutral{background:var(--surface-2);color:var(--muted)}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:11px;padding:1px 7px;border-radius:5px;background:var(--surface-2);color:var(--muted)}
+.tag.hit{background:var(--accent-soft);color:var(--accent)}
+
+/* rows */
+.rows{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.rows li{border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:11px 2px;cursor:pointer;background:none;border:0;width:100%;text-align:left}
+.row .t{font-weight:700;font-size:15px}
+.row .n{font-size:13px;color:var(--muted);margin-left:6px}
+.row .sub{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.score{display:flex;align-items:center;gap:8px;min-width:112px;justify-content:flex-end}
+.bar{width:64px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;flex:none}
+.bar i{display:block;height:100%;background:var(--accent)}
+.score .s{font-weight:500;font-size:15px;width:30px;text-align:right}
+.row-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.todo li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.todo li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);margin-top:7px;flex:none}
+.todo li.done::before{background:var(--good)}
+.todo li.done{color:var(--muted)}
+.empty{padding:16px;border:1px dashed var(--line);border-radius:var(--radius);color:var(--muted);font-size:14px;text-align:center}
+
+/* buttons */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:500;font-size:14px}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.ghost{background:none}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--surface);padding:9px;cursor:pointer;font-weight:500}
+.seg button.on{background:var(--accent);color:var(--accent-fg)}
+
+/* forms */
+.form{display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{width:auto}
+
+/* rule editor */
+.rule{display:grid;grid-template-columns:1fr 84px 84px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rule .d{font-size:12px;color:var(--muted)}
+.rule-head{display:grid;grid-template-columns:1fr 84px 84px;gap:8px;font-size:12px;color:var(--muted);padding-bottom:4px}
+.stat{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.stat .k{font-weight:500}
+.stat-head{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;font-size:12px;color:var(--muted)}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.big div{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px}
+.big .k{font-size:12px;color:var(--muted)}
+.big .v{font-size:20px;font-weight:700}
+
+/* macro */
+.gauge{display:flex;gap:4px}
+.gauge i{flex:1;height:10px;border-radius:3px;background:var(--surface-2)}
+.gauge i.on1{background:var(--good)}.gauge i.on2{background:var(--good)}.gauge i.on3{background:var(--warn)}.gauge i.on4{background:var(--bad)}.gauge i.on5{background:var(--bad)}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--font-mono);font-size:10px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--accent);stroke-width:2}
+.chart .area{fill:var(--accent);opacity:.12}
+.chart .pt{fill:var(--accent)}
+.ev{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ev .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ev .h b{font-size:14px}
+.ev .b{font-size:13px;color:var(--muted)}
+
+/* journal */
+.jr{display:flex;flex-direction:column;gap:6px}
+.jr .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.jr .h b{font-size:15px}
+.jr .m{font-size:13px;color:var(--muted)}
+.jr .o{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+
+/* ai output */
+.ai-out{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:14px;white-space:pre-wrap;line-height:1.6}
+.disclaimer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.tabbar button{flex:1;max-width:120px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 6px;font-size:11px;color:var(--muted);cursor:pointer}
+.tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{color:var(--accent);font-weight:700}
+
+/* sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:720px;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding-block:14px calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
+.sheet .sh{display:flex;justify-content:space-between;align-items:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:13px;max-width:90vw}
+.inst ol{padding-left:18px;margin:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+.table th{font-weight:500;color:var(--muted);font-size:12px}
+.table td.r,.table th.r{text-align:right}
+.scroll-x{overflow-x:auto}
+/* term help */
+.q{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:11px;font-weight:700;line-height:1;padding:0;cursor:pointer;vertical-align:middle;margin-left:4px;flex:none}
+.q:hover{color:var(--accent);border-color:var(--accent)}
+.tip-backdrop{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.tip{background:var(--surface);width:100%;max-width:720px;max-height:80vh;overflow:auto;border-radius:16px 16px 0 0;padding-block:14px calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px}
+.tip .one{font-size:17px;font-weight:700;line-height:1.4}
+.tip .lab{font-size:12px;color:var(--muted);letter-spacing:.04em;margin-bottom:2px}
+.tip p{font-size:14px;line-height:1.6}
+.interp{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;background:var(--surface-2);border-radius:var(--radius);padding:10px 12px}
+.interp li b{font-weight:700}
+.interp li.ok::before{content:"○ ";color:var(--good)}
+.interp li.no::before{content:"× ";color:var(--bad)}
+.interp li.na::before{content:"– ";color:var(--muted)}
+details.term{border-bottom:1px solid var(--line);padding:8px 0}
+details.term summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:2px}
+details.term summary::-webkit-details-marker{display:none}
+details.term summary b{font-size:15px}
+details.term summary span{font-size:13px;color:var(--muted)}
+details.term .body{padding:8px 0 4px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.6}
+details.term .body .lab{font-size:12px;color:var(--accent);font-weight:700}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.steps b{display:block}
+.hdr-btns{display:flex;gap:8px}
+@media (prefers-reduced-motion: no-preference){.bar i{transition:width .3s ease}}
+@media (min-width:600px){.idx .v{font-size:18px}}
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <div class="eyebrow" id="hdrDate">—</div>
+      <h1 id="hdrTitle">오늘의 점검</h1>
+    </div>
+    <div class="hdr-btns">
+    <button class="icon-btn" id="btnLearn" aria-label="배우기" title="배우기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6v16H6a2 2 0 0 0-2 2z"></path><path d="M20 5a2 2 0 0 0-2-2h-6v16h6a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+    <button class="icon-btn" id="btnSettings" aria-label="설정" title="설정">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+    </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- 오늘 -->
+<section id="tab-home" class="tab">
+  <div class="status-line" id="homeStatus"><span class="dot"></span><span>데이터 연결 확인 중</span></div>
+  <article class="card" id="introCard" hidden>
+    <div class="headline">처음이세요? 이렇게 보면 됩니다</div>
+    <ol class="steps">
+      <li><b>숫자 옆 <span class="q" style="display:inline-grid">?</span> 를 누르면</b> 그 용어가 무엇이고 어떻게 읽는지 바로 나옵니다.</li>
+      <li><b>종목을 누르면</b> 그 회사 숫자 하나하나를 쉬운 말로 풀어 줍니다.</li>
+      <li><b>오른쪽 위 책 아이콘</b>에 전체 용어 사전과 처음 쓰는 순서가 있습니다.</li>
+    </ol>
+    <div class="btn-row"><button class="btn primary small" id="introLearn">배우기 열기</button><button class="btn ghost small" id="introClose">닫기</button></div>
+  </article>
+  <article class="card" id="briefCard"></article>
+  <section class="block">
+    <h2>오늘 점검할 것</h2>
+    <ul class="todo" id="todoList"></ul>
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>규칙 점수 상위 후보 <button type="button" class="q" data-term="score">?</button></h2><span class="hint">관심종목 기준</span></div>
+    <p class="hint">점수는 "내가 정한 기준을 얼마나 만족하는지"를 0~100으로 바꾼 것입니다. 사라는 뜻이 아니라 살펴볼 후보라는 뜻입니다. 종목을 누르면 숫자별 풀이가 나옵니다.</p>
+    <ol class="rows" id="topList"></ol>
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>거시 위험도 <button type="button" class="q" data-term="risk">?</button></h2><span class="hint" id="macroMiniDate"></span></div>
+    <div id="macroMini"></div>
+  </section>
+  <section class="block">
+    <h2>해설 요청</h2>
+    <p class="hint">위 브리프·후보·거시 스냅샷·규칙을 Claude에게 보내 장기투자 관점의 점검 포인트를 받습니다. 처음 한 번 허용을 묻고, 사용량은 내 계정에서 차감됩니다.</p>
+    <div class="btn-row"><button class="btn primary" id="btnExplain">오늘의 점검 해설 받기</button><button class="btn ghost" id="btnStop" hidden>중지</button></div>
+    <div class="ai-out" id="explainOut" hidden></div>
+  </section>
+  <p class="disclaimer">이 앱은 내가 정한 규칙으로 데이터를 정리해 보여주는 기록 도구입니다. 매수·매도 추천이 아니며, 투자 판단과 책임은 본인에게 있습니다. 재무 수치 중 "참고값"은 확인 전 값이므로 공시 자료와 대조한 뒤 "확인됨"으로 바꿔 쓰세요.</p>
+</section>
+
+<!-- 종목 -->
+<section id="tab-stocks" class="tab" hidden>
+  <div class="seg" id="stockSeg"><button data-seg="watch" class="on">관심종목</button><button data-seg="guru">대가 포트폴리오</button></div>
+  <div id="segWatch" class="tab">
+    <div class="chips" id="sectorChips"></div>
+    <div class="row-head"><span id="watchCount"></span><button class="btn small" id="btnAddStock">종목 추가</button></div>
+    <ol class="rows" id="stockList"></ol>
+    <p class="hint">점수는 규칙 탭의 기준과 가중치로 계산합니다. 행을 누르면 숫자별 풀이가 나오고, 수치를 고치거나 "확인됨"으로 표시할 수 있습니다. 회색 "참고값" 표시는 아직 공시와 대조하지 않은 숫자라는 뜻입니다 <button type="button" class="q" data-term="verified">?</button></p>
+  </div>
+  <div id="segGuru" class="tab" hidden>
+    <p class="hint">13F <button type="button" class="q" data-term="13f">?</button> 공시(분기 종료 45일 후 제출) 기준 상위 보유 비중 <button type="button" class="q" data-term="weight">?</button>입니다. KB증권 앱에서 본 대가 종목도 "대가 추가"로 직접 넣을 수 있습니다. 대가 보유 여부는 규칙 점수에 반영됩니다.</p>
+    <div id="guruList" class="tab"></div>
+    <div class="btn-row"><button class="btn small" id="btnAddGuru">대가 추가</button></div>
+    <section class="block">
+      <h3>두 명 이상이 함께 보유한 종목</h3>
+      <div id="guruOverlap"></div>
+    </section>
+  </div>
+</section>
+
+<!-- 규칙 -->
+<section id="tab-rules" class="tab" hidden>
+  <p class="hint">장기투자 후보를 고르는 우리만의 기준입니다. 각 규칙 이름 옆 ? 를 누르면 그 지표가 무엇인지 설명이 나옵니다. 기준값과 가중치를 바꾸면 모든 종목의 점수가 다시 계산됩니다. 가중치는 "이 규칙을 얼마나 중요하게 볼지"이고, 합을 100으로 맞출 필요는 없습니다(비율로 환산) <button type="button" class="q" data-term="score">?</button></p>
+  <div id="ruleForm"></div>
+  <div class="btn-row"><button class="btn primary" id="btnSaveRules">규칙 저장</button><button class="btn ghost" id="btnResetRules">기본값으로</button></div>
+  <section class="block">
+    <h2>규칙 학습</h2>
+    <p class="hint">일지에 결과(수익률)가 기록된 항목을 모아, 각 규칙을 만족했던 기록의 성공률을 전체 성공률과 비교합니다. 성공률이 높았던 규칙은 가중치를 올리고 낮았던 규칙은 내리는 제안을 만듭니다. 기록이 3건 이상 쌓인 규칙부터 제안합니다.</p>
+    <div id="ruleStats"></div>
+    <div class="btn-row"><button class="btn" id="btnApplySuggest" disabled>제안 가중치 적용</button></div>
+  </section>
+  <section class="block">
+    <h2>규칙 리뷰 요청</h2>
+    <p class="hint">현재 규칙과 일지 통계를 Claude에게 보내 규칙의 빈틈과 보완할 지표를 물어봅니다.</p>
+    <div class="btn-row"><button class="btn" id="btnReview">규칙 리뷰 받기</button><button class="btn ghost" id="btnReviewStop" hidden>중지</button></div>
+    <div class="ai-out" id="reviewOut" hidden></div>
+  </section>
+</section>
+
+<!-- 거시 -->
+<section id="tab-macro" class="tab" hidden>
+  <section class="block">
+    <h2>오늘 스냅샷</h2>
+    <p class="hint">전쟁·정치·급변 같은 사건은 통제할 수 없으니, 사건이 터지기 전 지표가 어땠는지 매일 남겨 둡니다. 빈칸은 비워 두어도 됩니다.</p>
+    <form class="form" id="macroForm">
+      <div class="grid3">
+        <div class="field"><label for="m_date">날짜</label><input id="m_date" name="date" type="date" required></div>
+        <div class="field"><label for="m_sp">S&amp;P 500 <button type="button" class="q" data-term="sp500">?</button></label><input id="m_sp" name="sp500" type="number" step="0.01" inputmode="decimal"></div>
+        <div class="field"><label for="m_nq">나스닥 <button type="button" class="q" data-term="nasdaq">?</button></label><input id="m_nq" name="nasdaq" type="number" step="0.01" inputmode="decimal"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label for="m_10y">미 10년물 금리 % <button type="button" class="q" data-term="us10y">?</button></label><input id="m_10y" name="us10y" type="number" step="0.001" inputmode="decimal"></div>
+        <div class="field"><label for="m_wti">WTI 유가 $ <button type="button" class="q" data-term="wti">?</button></label><input id="m_wti" name="wti" type="number" step="0.01" inputmode="decimal"></div>
+        <div class="field"><label for="m_vix">VIX <button type="button" class="q" data-term="vix">?</button></label><input id="m_vix" name="vix" type="number" step="0.01" inputmode="decimal"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label for="m_krw">달러/원 <button type="button" class="q" data-term="usdkrw">?</button></label><input id="m_krw" name="usdkrw" type="number" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label for="m_fg">공포탐욕지수 <button type="button" class="q" data-term="fg">?</button></label><input id="m_fg" name="fg" type="number" step="1" min="0" max="100" inputmode="numeric"></div>
+        <div class="field"><label for="m_risk">내 위험도 판단 <button type="button" class="q" data-term="risk">?</button></label><select id="m_risk" name="risk"><option value="1">1 안정</option><option value="2">2 낮음</option><option value="3" selected>3 보통</option><option value="4">4 높음</option><option value="5">5 위기</option></select></div>
+      </div>
+      <div class="field"><label for="m_note">메모 (뉴스·분위기)</label><textarea id="m_note" name="note" rows="2"></textarea></div>
+      <div class="btn-row"><button class="btn primary" type="submit">스냅샷 저장</button></div>
+    </form>
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>S&amp;P 500 추이</h2><span class="hint" id="chartHint"></span></div>
+    <div id="macroChart"></div>
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>사건 기록</h2><button class="btn small" id="btnAddEvent">사건 추가</button></div>
+    <p class="hint">사건을 누르면 그 전 30일의 스냅샷을 모아 보여줍니다. 사건 직전 지표의 공통점을 찾는 용도입니다.</p>
+    <div id="eventList"></div>
+    <div id="eventDetail"></div>
+  </section>
+  <section class="block">
+    <h2>스냅샷 기록</h2>
+    <div class="scroll-x"><table class="table" id="macroTable"></table></div>
+  </section>
+</section>
+
+<!-- 일지 -->
+<section id="tab-journal" class="tab" hidden>
+  <div class="big" id="journalStats"></div>
+  <p class="hint">매수·매도·관망 결정을 이유와 함께 남기고, 몇 달 뒤 결과(수익률)를 적어 넣으면 규칙 탭의 학습에 쓰입니다. 기록 시점의 점수와 만족한 규칙은 자동으로 붙습니다.</p>
+  <div class="btn-row"><button class="btn primary" id="btnAddJournal">기록 추가</button></div>
+  <div id="journalList" class="tab"></div>
+</section>
+
+<!-- 배우기 -->
+<section id="tab-learn" class="tab" hidden>
+  <section class="block">
+    <h2>처음 쓰는 순서</h2>
+    <ol class="steps">
+      <li><b>오늘 탭에서 브리프를 읽는다</b>어제 미국 시장이 어땠는지 3분 안에 파악합니다. 모르는 단어는 ? 를 누르세요.</li>
+      <li><b>종목 탭에서 관심 회사를 눌러 본다</b>회사가 무슨 일을 하는지, 숫자가 무슨 뜻인지 쉬운 말로 나옵니다. 마음에 드는 회사는 증권사 앱에서 공시 숫자와 대조한 뒤 "확인됨"에 체크합니다.</li>
+      <li><b>거시 탭에서 하루 한 번 스냅샷을 남긴다</b>지수·금리·유가·VIX와 오늘 분위기를 적어 둡니다. 나중에 급락이 오면 "그 전에 무엇이 보였는지" 되짚는 자료가 됩니다.</li>
+      <li><b>결정은 일지에 남긴다</b>사든 안 사든 이유를 적습니다. 몇 달 뒤 수익률을 적어 넣으면 규칙 탭이 어떤 규칙이 잘 맞았는지 계산해 줍니다.</li>
+      <li><b>규칙은 천천히 고친다</b>처음 기준은 일반적인 장기투자 기준입니다. 일지 결과가 20~30건 쌓이기 전에는 크게 바꾸지 않는 편이 좋습니다.</li>
+    </ol>
+  </section>
+  <section class="block">
+    <h2>점수는 어떻게 나오나</h2>
+    <p class="hint">규칙마다 가중치가 있습니다(예: 영업이익률 25, 성장률 20 …, 합계 110). 어떤 회사가 영업이익률·ROE·대가 보유 세 규칙을 만족하면 25+15+10=50이고, 50÷110×100 ≈ 45점입니다. 점수가 높을수록 "내 기준에 가까운 회사"이지, 반드시 오를 회사라는 뜻은 아닙니다. 기준이 틀렸을 수 있으니 일지 결과로 가중치를 고쳐 갑니다.</p>
+  </section>
+  <section class="block">
+    <h2>용어 사전</h2>
+    <p class="hint">항목을 누르면 설명이 펼쳐집니다. 앱 곳곳의 ? 버튼도 같은 설명을 보여줍니다.</p>
+    <div id="learnList"></div>
+  </section>
+</section>
+
+<!-- 설정 -->
+<section id="tab-settings" class="tab" hidden>
+  <section class="block inst">
+    <h2>핸드폰 홈 화면에 설치</h2>
+    <p class="hint">아래 순서로 홈 화면에 아이콘을 만들면 앱처럼 열립니다. 카톡 안에서 링크를 열었다면 먼저 ⋯ 메뉴에서 "다른 브라우저로 열기"를 눌러 Safari나 Chrome으로 옮기세요.</p>
+    <h3>iPhone (Safari)</h3>
+    <ol><li>Safari에서 이 페이지를 연다</li><li>아래쪽 가운데 공유 버튼을 누른다</li><li>"홈 화면에 추가"를 누르고 이름을 확인한 뒤 추가</li></ol>
+    <h3>Android (Chrome)</h3>
+    <ol><li>Chrome에서 이 페이지를 연다</li><li>오른쪽 위 점 세 개 메뉴를 누른다</li><li>"홈 화면에 추가"(또는 "앱 설치")를 누른다</li></ol>
+  </section>
+  <section class="block">
+    <h2>업데이트와 공유</h2>
+    <p class="hint">이 버전은 GitHub에 올린 페이지입니다. 브리프·대가 포트폴리오·종목 소개 같은 공유 데이터는 저장소의 <code>updates.json</code> 파일에서 읽어 오므로, 그 파일을 갱신하면 다음에 열 때 모두에게 반영됩니다. 관심종목 수정·거시 스냅샷·일지처럼 내가 입력한 것은 이 기기의 브라우저 안에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우면 사라지니 아래 백업을 가끔 해 두세요.</p>
+    <div id="updateStatus" class="hint"></div>
+    <h3>내 데이터 백업</h3>
+    <div class="btn-row"><button class="btn" id="btnExport">백업 글자 만들기</button><button class="btn" id="btnCopyBackup">복사</button><button class="btn danger" id="btnImport">아래 내용으로 복원</button></div>
+    <textarea id="backupText" rows="4" placeholder="백업 글자 만들기를 누르면 여기에 나옵니다. 메모 앱 등에 붙여 두었다가 복원할 때 다시 붙여 넣으세요."></textarea>
+  </section>
+  <section class="block">
+    <h2>데이터</h2>
+    <p class="hint">초기 재무 수치는 참고값이므로 확인 후 고쳐 쓰세요.</p>
+    <div class="status-line" id="dataStatus"></div>
+  </section>
+  <section class="block">
+    <h2>만든 원칙</h2>
+    <ul class="themes">
+      <li>대상은 미국 주식, 목적은 장기 보유 수익</li>
+      <li>통제 불가능한 사건은 예측 대신 기록: 사건 전 지표를 남긴다</li>
+      <li>규모는 작아도 수익성이 좋은 기업을 찾는다: 영업이익률·ROE·부채비율·성장률</li>
+      <li>분야별 상위 기업만 추려 데이터를 쌓는다</li>
+      <li>대가들의 보유 종목을 출발점으로 쓴다</li>
+      <li>결정과 결과를 쌓아 규칙 가중치를 고친다</li>
+    </ul>
+  </section>
+  <p class="disclaimer">이 앱은 투자 조언을 제공하지 않습니다. 모든 수치는 기록·참고용이며 최종 판단은 본인의 몫입니다.</p>
+</section>
+
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="home" class="on"><svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h10"></path></svg>오늘</button>
+  <button data-tab="stocks"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>종목</button>
+  <button data-tab="rules"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>규칙</button>
+  <button data-tab="macro"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>거시</button>
+  <button data-tab="journal"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17h14M9 8h6M9 12h4"></path></svg>일지</button>
+</nav>
+
+<div class="sheet-backdrop" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sh"><h2 id="sheetTitle"></h2><button class="btn small ghost" id="sheetClose">닫기</button></div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+<div class="tip-backdrop" id="tip" hidden>
+  <div class="tip" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
+    <div class="sh"><h3 id="tipTitle"></h3><button class="btn small ghost" id="tipClose">닫기</button></div>
+    <div id="tipBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const use=n=>(window.claude&&typeof window.claude.use==='function')?window.claude.use(n).catch(()=>null):Promise.resolve(null);
+
+const SECTORS=['AI·반도체','소프트웨어·플랫폼','에너지','자동차','석유화학·소재','헬스케어','금융','소비재','산업재·방산'];
+const RULES=[
+  {id:'opm',label:'영업이익률',desc:'영업이익÷매출. 본업에서 얼마나 남기는지',field:'opm',kind:'min',unit:'%'},
+  {id:'growth',label:'매출 성장률',desc:'최근 연간 매출 증가율',field:'growth',kind:'min',unit:'%'},
+  {id:'roe',label:'ROE',desc:'자기자본이익률. 주주 자본으로 번 비율',field:'roe',kind:'min',unit:'%'},
+  {id:'de',label:'부채비율',desc:'부채÷자기자본. 낮을수록 안정적',field:'de',kind:'max',unit:'%'},
+  {id:'per',label:'PER',desc:'주가÷주당순이익. 낮을수록 이익 대비 싸다',field:'per',kind:'max',unit:'배'},
+  {id:'guru',label:'대가 보유',desc:'등록된 대가 포트폴리오에 들어 있는 종목',kind:'guru'},
+  {id:'small',label:'작지만 수익성 높음',desc:'시가총액이 기준 이하이면서 영업이익률 기준도 넘는 기업',field:'mcap',kind:'small',unit:'십억$'}
+];
+const DEFAULT_RULES={thresholds:{opm:20,growth:10,roe:15,de:100,per:30,guru:1,small:500},weights:{opm:25,growth:20,roe:15,de:15,per:10,guru:10,small:15}};
+const ACTIONS=['매수','추가매수','매도','일부매도','관망'];
+
+/* ---------- 용어 사전 ---------- */
+const TERM_GROUPS=[
+ {g:'회사 숫자 읽기',items:[
+  {id:'mcap',t:'시가총액',one:'회사를 통째로 살 때의 가격',body:'주가 × 발행 주식 수. 회사 크기를 재는 가장 쉬운 잣대입니다. 이 앱에서는 십억 달러 단위로 적고, 1,000십억$ = 1조$입니다.',read:'크다고 좋은 회사, 작다고 나쁜 회사가 아닙니다. 다만 작은 회사가 큰 회사만큼 이익률이 좋으면 앞으로 커질 여지가 있다고 보는 것이 이 앱의 일곱 번째 규칙입니다.',ex:'엔비디아 약 4.5조$, 포드 약 450억$(=45십억$).'},
+  {id:'rev',t:'매출',one:'1년 동안 판 금액 전체',body:'물건이나 서비스를 팔아 들어온 돈의 합계. 원가·인건비 같은 비용을 빼기 전 숫자입니다.'},
+  {id:'opm',t:'영업이익률',one:'100원어치 팔아서 본업으로 몇 원 남겼는지',body:'영업이익 ÷ 매출 × 100. 영업이익은 매출에서 원가, 인건비, 마케팅비 같은 본업 비용을 뺀 이익입니다. 이자나 세금, 일회성 손익은 빼기 전이라 "장사 자체를 얼마나 잘하는지"를 보여줍니다.',read:'높을수록 좋습니다. 소프트웨어·결제·반도체 설계처럼 20~60%가 나오는 업종이 있고, 유통·자동차·보험처럼 3~8%가 정상인 업종이 있습니다. 같은 분야끼리 비교하세요.',ex:'코스트코 3.8%: 싸게 많이 파는 구조. 비자 66%: 카드 결제망이 한 번 깔리면 비용이 거의 늘지 않음.'},
+  {id:'growth',t:'매출 성장률',one:'작년보다 매출이 몇 % 늘었는지',body:'(올해 매출 − 작년 매출) ÷ 작년 매출 × 100. 회사가 커지는 중인지, 멈췄는지, 줄고 있는지를 봅니다.',read:'장기투자에서는 이익률이 유지되면서 매출이 꾸준히 느는 회사를 찾습니다. 한 해 급등한 성장률은 다음 해 꺾일 수 있으니 여러 해를 보세요.'},
+  {id:'roe',t:'ROE (자기자본이익률)',one:'주주 돈 100원으로 1년에 몇 원 벌었는지',body:'순이익 ÷ 자기자본 × 100. 자기자본은 회사 재산에서 빚을 뺀 주주 몫입니다. 주주 돈을 얼마나 효율적으로 굴리는지 보여줍니다.',read:'보통 15% 이상이면 좋다고 봅니다. 다만 자사주를 많이 사들여 자기자본이 작아진 회사(애플, 마스터카드 등)는 ROE가 100%를 넘기도 해서 숫자가 과장될 수 있습니다. 그럴 땐 영업이익률과 함께 보세요.'},
+  {id:'de',t:'부채비율',one:'자기자본 100원당 빚이 몇 원인지',body:'부채 ÷ 자기자본 × 100. 빚이 많으면 금리가 오를 때 이자 부담이 커지고, 불황을 버티기 어렵습니다.',read:'낮을수록 안전합니다. 100% 이하면 무난, 200%를 넘으면 왜 빚이 많은지 확인하세요. 은행·유틸리티·금융 자회사를 둔 자동차 회사는 업종 특성상 높게 나옵니다.'},
+  {id:'per',t:'PER (주가수익비율)',one:'지금 이익이 그대로면 투자금을 되찾는 데 몇 년 걸리는지',body:'주가 ÷ 주당순이익(EPS). 이익에 비해 주가가 비싼지 싼지를 보는 가장 흔한 잣대입니다.',read:'낮을수록 싸다고 볼 수 있지만, 이익이 줄어들 회사도 PER이 낮게 나옵니다. 반대로 이익이 빨리 늘 거라 기대되면 PER이 높아집니다(테슬라 180배, 팔란티어 200배). 장기투자에서는 "이 PER을 정당화할 만큼 이익이 늘 수 있나"를 묻는 숫자입니다.'},
+  {id:'eps',t:'EPS (주당순이익)',one:'주식 1주가 1년에 벌어들인 이익',body:'순이익 ÷ 주식 수. PER을 계산할 때 씁니다.'},
+  {id:'buyback',t:'자사주 매입',one:'회사가 자기 주식을 사서 없애는 것',body:'주식 수가 줄어 남은 주주의 몫이 커집니다. 이익이 많은 미국 대기업이 자주 합니다. 다만 자기자본이 줄어 ROE·부채비율이 실제보다 높아 보이게 만듭니다.'},
+  {id:'fy',t:'FY (회계연도)',one:'그 회사가 1년 장부를 끊는 기준 기간',body:'FY2025는 2025 회계연도. 회사마다 끝나는 달이 달라서(애플은 9월, 엔비디아는 1월) 같은 FY라도 기간이 다를 수 있습니다.'},
+  {id:'filing',t:'공시 (10-K, 10-Q)',one:'회사가 미국 금융당국(SEC)에 내는 공식 실적 보고서',body:'10-K는 연간, 10-Q는 분기 보고서. 이 앱의 참고값을 확인할 때 가장 믿을 만한 출처입니다. 회사 홈페이지의 Investor Relations(IR) 페이지, SEC EDGAR, 국내 증권사 앱의 재무 탭에서 볼 수 있습니다.'},
+  {id:'verified',t:'참고값 / 확인됨',one:'이 앱의 숫자를 믿어도 되는지 표시',body:'처음 넣은 숫자는 대략치라 "참고값"입니다. 공시나 증권사 앱에서 대조한 뒤 종목을 열어 "확인됨"에 체크하면 표시가 사라집니다.'}
+ ]},
+ {g:'시장 지표 읽기',items:[
+  {id:'sp500',t:'S&P 500',one:'미국 대표 500개 회사를 묶은 지수',body:'"미국 주식시장이 올랐다/내렸다"고 할 때 보통 이 지수를 말합니다. 장기투자 성과의 기준선으로 가장 많이 씁니다.',read:'내 종목이 S&P 500보다 못 올랐다면 그냥 지수를 샀어도 됐다는 뜻입니다. 일지의 결과를 볼 때 같이 비교하세요.'},
+  {id:'nasdaq',t:'나스닥',one:'기술주 비중이 큰 지수',body:'애플·마이크로소프트·엔비디아 같은 기술 기업이 많이 들어 있어 AI·반도체 분위기를 볼 때 봅니다. S&P 500보다 움직임이 큽니다.'},
+  {id:'dow',t:'다우',one:'오래된 대형주 30개 지수',body:'역사가 길어 뉴스에 자주 나오지만 30개뿐이라 시장 전체를 대표하진 않습니다.'},
+  {id:'us10y',t:'미 10년물 국채 금리',one:'미국 정부에 10년 돈을 빌려줄 때 받는 이자율',body:'가장 안전한 투자의 수익률이라 모든 자산의 기준이 됩니다. 금리가 5%면 위험 없이 연 5%를 벌 수 있다는 뜻이라, 주식은 그보다 더 벌 수 있어야 매력이 있습니다.',read:'금리가 오르면 ① 빚 많은 회사의 이자 부담이 늘고 ② 먼 미래 이익에 기대는 고PER 성장주가 더 많이 떨어지는 경향이 있습니다. 금리가 내리면 반대입니다.'},
+  {id:'fed',t:'연준(Fed) 금리 인상·인하',one:'미국 중앙은행이 기준금리를 올리거나 내리는 것',body:'물가가 높으면 올리고(돈줄 죄기), 경기가 나쁘면 내립니다(돈 풀기). CPI(소비자물가)·PPI(생산자물가)가 예상보다 높게 나오면 "인상" 걱정이 커져 주식이 흔들립니다.'},
+  {id:'wti',t:'WTI 유가',one:'미국 기준 원유 1배럴 가격',body:'에너지 회사(엑슨모빌·셰브론)는 유가가 오르면 이익이 늘고, 석유화학·항공·자동차는 원가가 올라 불리합니다. 전쟁·중동 긴장이 생기면 가장 먼저 반응하는 지표라 거시 스냅샷에 넣었습니다.'},
+  {id:'gold',t:'금 가격',one:'불안할 때 사람들이 피신하는 자산',body:'전쟁·인플레이션·달러 약세 때 오르는 경향이 있습니다. 금이 계속 오르면 시장이 무언가를 걱정하고 있다는 신호로 읽습니다.'},
+  {id:'vix',t:'VIX (공포지수)',one:'앞으로 한 달 시장이 얼마나 출렁일지 투자자들이 예상하는 정도',body:'옵션 가격에서 계산합니다. 평소 12~20, 불안하면 25~30, 위기 때는 40을 넘습니다(2020년 3월에는 80 이상).',read:'VIX가 높을 때는 급락 중이라 무섭지만, 장기투자자에게는 좋은 회사를 싸게 사는 기회였던 적이 많습니다. 사건 기록과 함께 쌓아 두면 패턴이 보입니다.'},
+  {id:'fg',t:'공포탐욕지수',one:'시장 분위기를 0(극단적 공포)~100(극단적 탐욕)으로 나타낸 수',body:'CNN이 만든 지표로 변동성, 상승·하락 종목 수 등을 합칩니다. 25 미만 극단적 공포, 45 미만 공포, 55 전후 중립, 75 초과 탐욕.',read:'모두가 탐욕일 때 조심하고, 모두가 공포일 때 살펴본다는 역발상의 근거로 자주 쓰입니다.'},
+  {id:'usdkrw',t:'달러/원 환율',one:'1달러를 사는 데 드는 원화',body:'미국 주식은 달러로 사기 때문에 환율이 오르면(원화 약세) 같은 주가라도 원화 평가액이 늘고, 내리면 줄어듭니다. 장기적으로는 주가 변동이 더 크지만 매수 시점 환율은 기록해 두는 것이 좋습니다.'},
+  {id:'risk',t:'내 위험도 판단',one:'오늘 시장이 얼마나 위험해 보이는지 내가 매기는 1~5점',body:'정답은 없습니다. 뉴스·VIX·유가·금리를 보고 느낀 대로 적습니다. 나중에 급락 사건과 대조해 보면 내 감이 얼마나 맞는지, 어떤 지표를 놓쳤는지 알 수 있습니다.'},
+  {id:'eqw',t:'동일가중 지수',one:'500개 회사를 크기와 상관없이 똑같은 비중으로 섞은 지수',body:'보통 S&P 500은 큰 회사(엔비디아·애플)의 영향이 큽니다. 동일가중 지수가 더 좋았다는 말은 "큰 기술주 말고 나머지가 올랐다"는 뜻입니다.'},
+  {id:'sox',t:'반도체지수 (SOX)',one:'미국 반도체 회사들을 묶은 지수',body:'엔비디아·브로드컴·AMD·마이크론 등. AI 투자 열기를 가장 직접 반영합니다.'}
+ ]},
+ {g:'대가와 공시',items:[
+  {id:'13f',t:'13F',one:'큰 투자회사가 분기마다 공개하는 보유 종목 명단',body:'미국에서 1억 달러 이상 굴리는 기관은 분기가 끝난 뒤 45일 안에 어떤 미국 주식을 몇 주 갖고 있는지 SEC에 제출해야 합니다. 2·5·8·11월 중순에 나옵니다.',read:'45일 늦은 정보라 그 사이 팔았을 수도 있고, 공매도·채권·해외주식은 빠집니다. "어떤 종목을 오래 들고 있나"를 보는 용도로 쓰세요.'},
+  {id:'weight',t:'비중 (%)',one:'그 투자자의 주식 자산 중 이 종목이 차지하는 몫',body:'버핏의 애플 22%는 버크셔가 가진 상장주식 가치의 22%가 애플이라는 뜻입니다. 비중이 클수록 확신이 크다고 봅니다.'},
+  {id:'guru',t:'대가 보유 규칙',one:'등록된 대가 중 한 명이라도 갖고 있으면 점수 가산',body:'출발점으로만 쓰세요. 대가도 틀리고, 그들이 산 가격은 지금과 다릅니다.'}
+ ]},
+ {g:'투자 기본',items:[
+  {id:'long',t:'장기투자',one:'몇 달이 아니라 몇 년 단위로 들고 가는 투자',body:'좋은 회사의 이익이 늘면 주가가 따라온다는 전제입니다. 단기 뉴스로 사고팔지 않는 대신, 처음에 회사를 고를 때 숫자를 꼼꼼히 봅니다. 이 앱의 규칙·일지는 그 고르는 기준을 쌓는 도구입니다.'},
+  {id:'ticker',t:'티커',one:'거래소에서 쓰는 종목 약칭',body:'NVDA=엔비디아, AAPL=애플처럼 알파벳 1~5자. 증권사 앱에서 검색할 때 그대로 쓰면 됩니다.'},
+  {id:'sector',t:'분야 (섹터)',one:'회사가 속한 산업 묶음',body:'같은 분야끼리 숫자를 비교해야 공정합니다. 유통(코스트코)과 소프트웨어(마이크로소프트)의 영업이익률을 바로 비교하면 유통이 항상 나빠 보입니다.'},
+  {id:'return',t:'수익률',one:'산 가격 대비 몇 % 올랐는지',body:'(지금 가격 − 산 가격) ÷ 산 가격 × 100. 배당을 받았다면 더해서 계산합니다. 일지에서는 기록 시점 가격 대비로 적습니다.'},
+  {id:'score',t:'규칙 점수',one:'내가 정한 기준을 얼마나 만족하는지 0~100으로 환산',body:'각 규칙에 가중치를 두고, 만족한 규칙의 가중치 합 ÷ 전체 가중치 합 × 100. 예: 가중치 합이 110이고 그중 80만큼 만족하면 73점.',read:'점수가 높다고 사라는 뜻이 아닙니다. 내 기준에 맞는 후보일 뿐이고, 기준 자체가 틀렸을 수 있어 일지 결과로 가중치를 고쳐 갑니다.'},
+  {id:'small',t:'작지만 수익성 높은 기업',one:'시가총액은 기준 이하인데 영업이익률은 기준을 넘는 회사',body:'큰 회사만큼 돈을 잘 버는데 아직 크기가 작다면, 앞으로 커질 여지가 있다고 보는 규칙입니다. 이 앱 목록은 대형주 위주라 5,000억$ 이하를 "작다"고 잡았습니다. 기준값은 규칙 탭에서 바꿀 수 있습니다.'},
+  {id:'divers',t:'분산',one:'한 바구니에 담지 않기',body:'한 종목·한 분야에 몰면 그 분야가 꺾일 때 함께 꺾입니다. 분야 필터를 둔 이유입니다.'},
+  {id:'color',t:'빨강·파랑 색 규칙',one:'이 앱은 국내 증권사 앱처럼 빨강=상승, 파랑=하락',body:'미국 사이트는 반대(초록=상승, 빨강=하락)이니 해외 자료를 볼 때 헷갈리지 마세요.'}
+ ]}
+];
+const TERMS={};TERM_GROUPS.forEach(g=>g.items.forEach(i=>{TERMS[i.id]=i;}));
+function termBtn(id){return TERMS[id]?'<button type="button" class="q" data-term="'+id+'" aria-label="'+esc(TERMS[id].t)+' 설명">?</button>':'';}
+function openTerm(id){const t=TERMS[id];if(!t)return;$('#tipTitle').textContent=t.t;
+  $('#tipBody').innerHTML='<div class="one">'+esc(t.one)+'</div><p>'+esc(t.body)+'</p>'+(t.read?'<div><div class="lab">읽는 법</div><p>'+esc(t.read)+'</p></div>':'')+(t.ex?'<div><div class="lab">예</div><p>'+esc(t.ex)+'</p></div>':'')+'<p class="hint">전체 용어 사전은 오른쪽 위 책 아이콘(배우기)에 있습니다.</p>';
+  $('#tip').hidden=false;}
+function closeTerm(){$('#tip').hidden=true;}
+function renderLearn(){const el=$('#learnList');if(el.dataset.done)return;el.dataset.done='1';
+  el.innerHTML=TERM_GROUPS.map(g=>'<section class="block"><h3>'+esc(g.g)+'</h3><div>'+g.items.map(i=>'<details class="term"><summary><b>'+esc(i.t)+'</b><span>'+esc(i.one)+'</span></summary><div class="body"><p>'+esc(i.body)+'</p>'+(i.read?'<div><div class="lab">읽는 법</div>'+esc(i.read)+'</div>':'')+(i.ex?'<div><div class="lab">예</div>'+esc(i.ex)+'</div>':'')+'</div></details>').join('')+'</div></section>').join('');}
+
+/* 종목 숫자 풀이 */
+function interpretStock(s){
+  const T=S.rules.thresholds;const g=guruSet();const sc=scoreStock(s,S.rules,g);const L=[];
+  const li=(cls,label,tid,txt)=>L.push('<li class="'+cls+'"><b>'+label+'</b>'+termBtn(tid)+' '+txt+'</li>');
+  const okc=(v,ok)=>v==null?'na':(ok?'ok':'no');
+  if(s.mcap==null)li('na','시가총액','mcap','데이터 없음');else li(s.mcap<=T.small?'ok':'na','시가총액 '+mcapStr(s.mcap),'mcap','회사를 통째로 살 때의 가격. '+(s.mcap<=T.small?'이 목록에서는 작은 편(기준 '+mcapStr(T.small)+' 이하)':'대형주(기준 '+mcapStr(T.small)+' 초과)')+'.');
+  li(okc(s.opm,s.opm>=T.opm),'영업이익률 '+(s.opm==null?'—':s.opm+'%'),'opm',s.opm==null?'데이터 없음':'100원 팔아 '+s.opm+'원이 본업 이익으로 남음. 기준 '+T.opm+'% '+(s.opm>=T.opm?'넘음':'미달')+'.');
+  li(okc(s.growth,s.growth>=T.growth),'매출 성장률 '+(s.growth==null?'—':s.growth+'%'),'growth',s.growth==null?'데이터 없음':(s.growth>=0?'작년보다 매출이 '+s.growth+'% 늘어남':'작년보다 매출이 '+Math.abs(s.growth)+'% 줄어듦')+'. 기준 '+T.growth+'% '+(s.growth>=T.growth?'넘음':'미달')+'.');
+  li(okc(s.roe,s.roe>=T.roe),'ROE '+(s.roe==null?'—':s.roe+'%'),'roe',s.roe==null?'데이터 없음(자본이 마이너스인 회사는 계산 불가)':'주주 돈 100원으로 1년에 '+s.roe+'원 벌어들임. 기준 '+T.roe+'% '+(s.roe>=T.roe?'넘음':'미달')+(s.roe>60?'. 자사주 매입 등으로 자본이 작아 과장됐을 수 있음':'')+'.');
+  li(okc(s.de,s.de<=T.de),'부채비율 '+(s.de==null?'—':s.de+'%'),'de',s.de==null?'데이터 없음':'자기자본 100원당 빚 '+s.de+'원. 기준 '+T.de+'% '+(s.de<=T.de?'이내':'초과, 업종 특성인지 확인')+'.');
+  li(okc(s.per,s.per<=T.per),'PER '+(s.per==null?'—':s.per+'배'),'per',s.per==null?'데이터 없음(적자이거나 이익이 거의 없음)':'지금 이익이 유지되면 투자금 회수에 약 '+s.per+'년. 기준 '+T.per+'배 '+(s.per<=T.per?'이내':'초과')+(s.per>60?', 큰 이익 성장을 이미 기대하는 가격':'')+'.');
+  const names=S.gurus.filter(gg=>(gg.holdings||[]).some(h=>normT(h.t)===normT(s.ticker))).map(gg=>gg.name);
+  li(names.length?'ok':'no','대가 보유','guru',names.length?names.join(', ')+' 포트폴리오에 있음.':'등록된 대가 포트폴리오에 없음.');
+  const small=s.mcap!=null&&s.mcap<=T.small&&s.opm!=null&&s.opm>=T.opm;
+  li(small?'ok':'no','작지만 수익성 높음','small',small?'시총이 기준 이하이면서 영업이익률 기준도 넘음.':'해당 없음.');
+  return '<div class="meta">규칙 점수 <b>'+sc.score+'</b>점 · 7개 규칙 중 '+sc.hits.length+'개 만족 '+termBtn('score')+'</div><ul class="interp">'+L.join('')+'</ul>';
+}
+
+const S={db:null,sample:null,canWrite:true,dbState:'loading',loaded:{},stocks:[],gurus:[],rules:JSON.parse(JSON.stringify(DEFAULT_RULES)),briefs:[],macro:[],events:[],journal:[],sector:'전체',seg:'watch',tab:'home',openEvent:null,suggest:null};
+
+/* ---------- helpers ---------- */
+function todayStr(d){d=d||new Date();const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function fmtDateK(s){if(!s)return '';const d=new Date(s+'T00:00:00');if(isNaN(d))return s;const w=['일','월','화','수','목','금','토'][d.getDay()];return (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+w+')';}
+function num(v){if(v===''||v==null)return null;const n=Number(v);return isNaN(n)?null:n;}
+function fmt(n,d){if(n==null||isNaN(n))return '—';return Number(n).toLocaleString('en-US',{minimumFractionDigits:d==null?0:d,maximumFractionDigits:d==null?2:d});}
+function pct(n,d){if(n==null)return '—';return (n>0?'+':'')+fmt(n,d==null?1:d)+'%';}
+function chgClass(n){return n==null?'':(n>0?'up':n<0?'down':'');}
+function mcapStr(b){if(b==null)return '—';return b>=1000?(b/1000).toFixed(1)+'조$':fmt(b,0)+'십억$';}
+function normT(t){t=String(t||'').toUpperCase().trim();if(t==='GOOG')return 'GOOGL';if(t==='BRK-B'||t==='BRK/B')return 'BRK.B';return t;}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.hidden=true;},2200);}
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+function guruSet(){const s=new Set();S.gurus.forEach(g=>(g.holdings||[]).forEach(h=>s.add(normT(h.t))));return s;}
+function scoreStock(st,rules,gset){
+  const T=rules.thresholds,W=rules.weights;let pts=0,max=0;const hits=[];
+  RULES.forEach(r=>{const w=Number(W[r.id])||0;if(w<=0)return;max+=w;let ok=false;
+    if(r.kind==='min')ok=st[r.field]!=null&&st[r.field]>=T[r.id];
+    else if(r.kind==='max')ok=st[r.field]!=null&&st[r.field]<=T[r.id];
+    else if(r.kind==='guru')ok=gset.has(normT(st.ticker));
+    else if(r.kind==='small')ok=st.mcap!=null&&st.mcap<=T.small&&st.opm!=null&&st.opm>=T.opm;
+    if(ok){pts+=w;hits.push(r.id);}});
+  return {score:max?Math.round(pts/max*100):0,hits};
+}
+function scoredStocks(){const g=guruSet();return S.stocks.map(s=>Object.assign({},s,scoreStock(s,S.rules,g))).sort((a,b)=>b.score-a.score||a.ticker.localeCompare(b.ticker));}
+function ruleLabel(id){const r=RULES.find(x=>x.id===id);return r?r.label:id;}
+
+/* ---------- db write ---------- */
+async function write(path,data,merge){
+  if(!S.db){toast('저장소에 연결되지 않아 저장할 수 없습니다');return false;}
+  try{if(merge)await S.db.doc(path).update(data);else await S.db.doc(path).set(data);return true;}
+  catch(e){const c=e&&e.code;if(c==='invalid_argument'){S.canWrite=false;toast('쓰기 권한이 없어 저장되지 않았습니다');}else if(c==='quota_exceeded')toast('저장 용량이 가득 찼습니다. 오래된 기록을 지워 주세요');else toast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요');return false;}
+}
+async function remove(path){if(!S.db)return false;try{await S.db.doc(path).delete();return true;}catch(e){toast('삭제에 실패했습니다');return false;}}
+
+/* ---------- boot ---------- */
+function boot(){
+  const saved=lsGet('tab');if(saved&&$('#tab-'+saved))S.tab=saved;
+  $('#hdrDate').textContent=fmtDateK(todayStr())+' · '+todayStr().slice(0,4);
+  $('#m_date').value=todayStr();
+  wireStatic();showTab(S.tab);render();
+  (async()=>{
+    let db=await use('db');
+    if(!db){db=makeLocalDb();S.local=true;}
+    S.db=db;S.dbState='ok';
+    if(S.local)loadRemoteUpdates();
+    use('user').then(u=>{if(u&&u.can)u.can('data.write').then(v=>{if(v===false){S.canWrite=false;render();}}).catch(()=>{});});
+    use('sample').then(s=>{S.sample=s;render();});
+    const onErr=name=>e=>{S.loaded[name]='error';render();};
+    db.collection('stocks').onSnapshot(sn=>{S.stocks=sn.docs.map(d=>d.data());S.loaded.stocks=true;render();},onErr('stocks'));
+    db.collection('gurus').onSnapshot(sn=>{S.gurus=sn.docs.map(d=>d.data());S.loaded.gurus=true;render();},onErr('gurus'));
+    db.doc('settings/rules').onSnapshot(d=>{if(d.exists){const x=d.data();S.rules={thresholds:Object.assign({},DEFAULT_RULES.thresholds,x.thresholds||{}),weights:Object.assign({},DEFAULT_RULES.weights,x.weights||{})};}S.loaded.rules=true;render();},onErr('rules'));
+    db.collection('briefs').orderBy('date','desc').limit(7).onSnapshot(sn=>{S.briefs=sn.docs.map(d=>d.data());S.loaded.briefs=true;render();},onErr('briefs'));
+    db.collection('macro').orderBy('date','desc').limit(120).onSnapshot(sn=>{S.macro=sn.docs.map(d=>d.data());S.loaded.macro=true;render();},onErr('macro'));
+    db.collection('events').orderBy('date','desc').limit(60).onSnapshot(sn=>{S.events=sn.docs.map(d=>Object.assign({id:d.id},d.data()));S.loaded.events=true;render();},onErr('events'));
+    db.collection('journal').orderBy('date','desc').limit(300).onSnapshot(sn=>{S.journal=sn.docs.map(d=>Object.assign({id:d.id},d.data()));S.loaded.journal=true;render();},onErr('journal'));
+  })();
+}
+
+function wireStatic(){
+  $$('#tabbar button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+  $('#btnSettings').addEventListener('click',()=>showTab('settings'));
+  $('#btnLearn').addEventListener('click',()=>showTab('learn'));
+  $('#introLearn').addEventListener('click',()=>{lsSet('introDone','1');showTab('learn');});
+  $('#introClose').addEventListener('click',()=>{lsSet('introDone','1');$('#introCard').hidden=true;});
+  $('#tipClose').addEventListener('click',closeTerm);
+  $('#btnExport').addEventListener('click',()=>{if(!S.db||!S.db.local)return;$('#backupText').value=S.db._export();toast('백업 글자를 만들었습니다');});
+  $('#btnCopyBackup').addEventListener('click',()=>{const t=$('#backupText');if(!t.value){toast('먼저 백업 글자를 만드세요');return;}t.select();const p=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t.value):Promise.reject();p.then(()=>toast('복사했습니다')).catch(()=>{try{document.execCommand('copy');toast('복사했습니다');}catch(e){toast('길게 눌러 직접 복사하세요');}});});
+  $('#btnImport').addEventListener('click',()=>{const b=$('#btnImport');if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말 복원 (지금 데이터를 덮어씀)';return;}try{S.db._import($('#backupText').value);toast('복원했습니다');b.dataset.c='';b.textContent='아래 내용으로 복원';}catch(e){toast('백업 글자 형식이 맞지 않습니다');}});
+  $('#tip').addEventListener('click',e=>{if(e.target.id==='tip')closeTerm();});
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-term]');if(b){e.preventDefault();e.stopPropagation();openTerm(b.dataset.term);}},true);
+  $$('#stockSeg button').forEach(b=>b.addEventListener('click',()=>{S.seg=b.dataset.seg;$$('#stockSeg button').forEach(x=>x.classList.toggle('on',x===b));$('#segWatch').hidden=S.seg!=='watch';$('#segGuru').hidden=S.seg!=='guru';}));
+  $('#btnAddStock').addEventListener('click',()=>openStockSheet(null));
+  $('#btnAddGuru').addEventListener('click',()=>openGuruSheet(null));
+  $('#btnAddEvent').addEventListener('click',()=>openEventSheet());
+  $('#btnAddJournal').addEventListener('click',()=>openJournalSheet());
+  $('#btnSaveRules').addEventListener('click',saveRules);
+  $('#btnResetRules').addEventListener('click',()=>{renderRuleForm(DEFAULT_RULES,true);toast('기본값을 불러왔습니다. 저장을 눌러 반영하세요');});
+  $('#btnApplySuggest').addEventListener('click',applySuggest);
+  $('#macroForm').addEventListener('submit',saveMacro);
+  $('#sheetClose').addEventListener('click',closeSheet);
+  $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
+  $('#btnExplain').addEventListener('click',()=>askClaude('explain'));
+  $('#btnStop').addEventListener('click',()=>{if(S.ctl)S.ctl.abort();});
+  $('#btnReview').addEventListener('click',()=>askClaude('review'));
+  $('#btnReviewStop').addEventListener('click',()=>{if(S.ctl)S.ctl.abort();});
+}
+
+function showTab(t){
+  S.tab=t;lsSet('tab',t);
+  ['home','stocks','rules','macro','journal','learn','settings'].forEach(k=>{$('#tab-'+k).hidden=k!==t;});
+  $$('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('#hdrTitle').textContent={home:'오늘의 점검',stocks:'종목',rules:'우리의 규칙',macro:'거시 리스크',journal:'투자 일지',learn:'배우기',settings:'설정'}[t]||'';
+  window.scrollTo(0,0);render();
+}
+
+/* ---------- render ---------- */
+function render(){
+  renderStatus();
+  if(S.tab==='home')renderHome();
+  else if(S.tab==='stocks'){renderStocks();renderGurus();}
+  else if(S.tab==='rules'){renderRuleForm(S.rules,false);renderRuleStats();}
+  else if(S.tab==='macro')renderMacro();
+  else if(S.tab==='journal')renderJournal();
+  else if(S.tab==='learn')renderLearn();
+  else if(S.tab==='settings')renderSettings();
+}
+function renderStatus(){
+  const el=$('#homeStatus');
+  if(S.dbState==='loading'){el.innerHTML='<span class="dot"></span><span>저장소 연결 중</span>';return;}
+  if(S.dbState==='none'){el.innerHTML='<span class="dot bad"></span><span>저장소에 연결되지 않았습니다. claude.ai에서 로그인한 상태로 열어 주세요.</span>';return;}
+  const b=S.briefs[0];
+  el.innerHTML='<span class="dot ok"></span><span>'+(b?'브리프 기준: '+esc(b.date)+' 장마감':'아직 브리프가 없습니다')+'</span>'+(S.local?'<span class="pill neutral">이 기기에 저장</span>':'')+(S.canWrite?'':'<span class="pill warn">읽기 전용</span>');
+}
+function riskPill(r){r=Number(r)||0;const m={1:['안정','good'],2:['낮음','good'],3:['보통','warn'],4:['높음','bad'],5:['위기','bad']}[r];return m?'<span class="pill '+m[1]+'">위험도 '+r+' · '+m[0]+'</span>':'';}
+
+function renderHome(){
+  $('#introCard').hidden=lsGet('introDone')==='1';
+  const b=S.briefs[0],card=$('#briefCard');
+  if(!b){card.innerHTML=S.loaded.briefs?'<div class="empty">아직 오늘의 브리프가 없습니다. 자동 업데이트를 설정하거나, 거시 탭에서 오늘 스냅샷을 먼저 남겨 보세요.</div>':'<div class="empty">브리프를 불러오는 중</div>';}
+  else{
+    const ix=b.idx||{};
+    card.innerHTML=
+      '<div class="meta">'+esc(fmtDateK(b.date))+' 미국 장마감 기준'+(b.createdBy==='claude'?' · Claude가 정리':'')+'</div>'+
+      '<div class="headline">'+esc(b.headline||'')+'</div>'+
+      '<div class="idx">'+
+        idxCell('S&P 500',ix.sp500,ix.sp500d,ix.sp500w,'sp500')+idxCell('나스닥',ix.nasdaq,ix.nasdaqd,ix.nasdaqw,'nasdaq')+idxCell('다우',ix.dow,ix.dowd,ix.doww,'dow')+
+      '</div>'+
+      '<div class="kv">'+kv('미 10년물',b.us10y!=null?fmt(b.us10y,2)+'%':null,'us10y')+kv('WTI',b.wti!=null?'$'+fmt(b.wti,2):null,'wti')+kv('금',b.gold!=null?'$'+fmt(b.gold,0):null,'gold')+kv('공포탐욕',b.fg!=null?fmt(b.fg,0)+(b.fg<25?' 극단적 공포':b.fg<45?' 공포':b.fg<=55?' 중립':b.fg<=75?' 탐욕':' 극단적 탐욕'):null,'fg')+'</div>'+
+      '<p class="hint">빨강은 상승, 파랑은 하락입니다(국내 앱과 같음). "주간"은 지난 한 주 동안의 변화입니다.</p>'+
+      '<div>'+riskPill(b.risk)+'</div>'+
+      (b.themes&&b.themes.length?'<ul class="themes">'+b.themes.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+
+      (b.watch&&b.watch.length?'<div><div class="meta">장기투자 관점에서 볼 것</div><ul class="themes">'+b.watch.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul></div>':'')+
+      (b.source?'<div class="meta">출처: '+esc(b.source)+'</div>':'');
+  }
+  // todo
+  const today=todayStr();const todos=[];
+  const hasMacroToday=S.macro.some(m=>m.date===today);
+  todos.push({done:hasMacroToday,text:hasMacroToday?'오늘 거시 스냅샷 기록 완료':'거시 탭에서 오늘 스냅샷 남기기 (지수·금리·유가·위험도)'});
+  const unverified=S.stocks.filter(s=>!s.verified).length;
+  todos.push({done:unverified===0,text:unverified?'참고값 상태인 종목 '+unverified+'개: 재무 수치 확인하기':'모든 종목 수치 확인됨'});
+  const pending=S.journal.filter(j=>!j.outcome&&j.action!=='관망'&&daysBetween(j.date,today)>=90);
+  todos.push({done:pending.length===0,text:pending.length?'90일 지난 일지 '+pending.length+'건의 결과(수익률) 적어 넣기':'결과 기록이 밀린 일지 없음'});
+  const latestG=S.gurus.map(g=>g.quarter).sort().pop();
+  todos.push({done:!!latestG,text:latestG?'대가 포트폴리오 기준: '+latestG+' (다음 13F는 분기 말 45일 뒤)':'대가 포트폴리오 등록하기'});
+  $('#todoList').innerHTML=todos.map(t=>'<li class="'+(t.done?'done':'')+'">'+esc(t.text)+'</li>').join('');
+  // top
+  const top=scoredStocks().slice(0,5);
+  $('#topList').innerHTML=top.length?top.map(stockRow).join(''):'<li><div class="empty">관심종목이 아직 없습니다. 종목 탭에서 추가하세요.</div></li>';
+  $$('#topList .row').forEach(b=>b.addEventListener('click',()=>openStockSheet(b.dataset.t)));
+  // macro mini
+  const m=S.macro[0];
+  $('#macroMiniDate').textContent=m?fmtDateK(m.date)+' 스냅샷':'';
+  $('#macroMini').innerHTML=m?gauge(m.risk)+'<div class="kv" style="margin-top:8px">'+kv('S&P 500',m.sp500!=null?fmt(m.sp500,0):null)+kv('10년물',m.us10y!=null?fmt(m.us10y,2)+'%':null)+kv('WTI',m.wti!=null?'$'+fmt(m.wti,0):null)+kv('VIX',m.vix!=null?fmt(m.vix,1):null)+'</div>'+(m.note?'<p class="hint" style="margin-top:6px">'+esc(m.note)+'</p>':''):'<div class="empty">스냅샷이 없습니다</div>';
+  $('#btnExplain').hidden=!S.sample;
+  if(!S.sample)$('#explainOut').hidden=true;
+}
+function idxCell(k,v,d,w,tid){return '<div><div class="k">'+k+(tid?termBtn(tid):'')+'</div><div class="v num">'+(v!=null?fmt(v,0):'—')+'</div><div class="chg num"><span class="'+chgClass(d)+'">'+pct(d,2)+'</span>'+(w!=null?' <span class="meta">주간 '+pct(w,2)+'</span>':'')+'</div></div>';}
+function kv(k,v,tid){return '<div><div class="k">'+k+(tid?termBtn(tid):'')+'</div><div class="v num">'+(v==null?'—':esc(v))+'</div></div>';}
+function gauge(r){r=Number(r)||0;let h='<div class="gauge">';for(let i=1;i<=5;i++)h+='<i class="'+(i<=r?'on'+r:'')+'"></i>';return h+'</div>';}
+
+function stockRow(s){
+  return '<li><button class="row" data-t="'+esc(s.ticker)+'">'+
+    '<div><span class="t">'+esc(s.ticker)+'</span><span class="n">'+esc(s.name||'')+'</span></div>'+
+    '<div class="score"><span class="bar"><i style="width:'+s.score+'%"></i></span><span class="s num">'+s.score+'</span></div>'+
+    (s.desc?'<div class="sub"><span class="hint">'+esc(s.desc)+'</span></div>':'')+
+    '<div class="sub"><span class="tag">'+esc(s.sector||'')+'</span><span class="tag">'+mcapStr(s.mcap)+'</span>'+
+      (s.verified?'':'<span class="tag">참고값</span>')+
+      RULES.filter(r=>s.hits.includes(r.id)).map(r=>'<span class="tag hit">'+r.label+'</span>').join('')+
+    '</div></button></li>';
+}
+
+function renderStocks(){
+  const chips=['전체'].concat(SECTORS);
+  $('#sectorChips').innerHTML=chips.map(c=>'<button class="chip '+(S.sector===c?'on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join('');
+  $$('#sectorChips .chip').forEach(b=>b.addEventListener('click',()=>{S.sector=b.dataset.c;renderStocks();}));
+  const all=scoredStocks();const list=S.sector==='전체'?all:all.filter(s=>s.sector===S.sector);
+  $('#watchCount').textContent=list.length+'개 종목 · 점수순';
+  $('#stockList').innerHTML=list.length?list.map(stockRow).join(''):'<li><div class="empty">'+(S.loaded.stocks?'이 분야에 등록된 종목이 없습니다':'불러오는 중')+'</div></li>';
+  $$('#stockList .row').forEach(b=>b.addEventListener('click',()=>openStockSheet(b.dataset.t)));
+}
+
+function renderGurus(){
+  const el=$('#guruList');
+  if(!S.gurus.length){el.innerHTML='<div class="empty">'+(S.loaded.gurus?'등록된 대가가 없습니다':'불러오는 중')+'</div>';$('#guruOverlap').innerHTML='';return;}
+  const mine=new Set(S.stocks.map(s=>normT(s.ticker)));
+  el.innerHTML=S.gurus.map(g=>{
+    const hs=(g.holdings||[]).slice().sort((a,b)=>(b.w||0)-(a.w||0));
+    return '<section class="block"><div class="block-head"><div><h3>'+esc(g.name)+'</h3><div class="meta">'+esc(g.firm||'')+' · '+esc(g.quarter||'')+(g.filed?' 제출 '+esc(g.filed):'')+'</div></div><button class="btn small" data-g="'+esc(g.id)+'">편집</button></div>'+
+      '<table class="table"><tr><th>종목</th><th class="r">비중</th><th class="r">관심목록</th></tr>'+hs.map(h=>'<tr><td><b>'+esc(h.t)+'</b>'+(h.n?' <span class="meta">'+esc(h.n)+'</span>':'')+'</td><td class="r num">'+(h.w!=null?fmt(h.w,1)+'%':'—')+'</td><td class="r">'+(mine.has(normT(h.t))?'<span class="pill accent">있음</span>':'<button class="btn small" data-add="'+esc(normT(h.t))+'" data-n="'+esc(h.n||'')+'">추가</button>')+'</td></tr>').join('')+'</table>'+
+      (g.note?'<p class="hint">'+esc(g.note)+'</p>':'')+(g.source?'<div class="meta">출처: '+esc(g.source)+'</div>':'')+'</section>';
+  }).join('');
+  $$('#guruList [data-g]').forEach(b=>b.addEventListener('click',()=>openGuruSheet(b.dataset.g)));
+  $$('#guruList [data-add]').forEach(b=>b.addEventListener('click',()=>openStockSheet(null,{ticker:b.dataset.add,name:b.dataset.n})));
+  const cnt={};S.gurus.forEach(g=>{const seen=new Set();(g.holdings||[]).forEach(h=>{const t=normT(h.t);if(seen.has(t))return;seen.add(t);cnt[t]=cnt[t]||[];cnt[t].push(g.name);});});
+  const ov=Object.keys(cnt).filter(t=>cnt[t].length>=2).sort((a,b)=>cnt[b].length-cnt[a].length);
+  $('#guruOverlap').innerHTML=ov.length?'<div class="tags">'+ov.map(t=>'<span class="tag hit">'+esc(t)+' · '+cnt[t].length+'명</span>').join('')+'</div>':'<p class="hint">겹치는 종목이 없습니다</p>';
+}
+
+/* ---------- rules ---------- */
+function renderRuleForm(rules,force){
+  const el=$('#ruleForm');
+  if(!force&&el.contains(document.activeElement))return;
+  el.innerHTML='<div class="rule-head"><span>규칙</span><span>기준값</span><span>가중치</span></div>'+RULES.map(r=>{
+    const th=r.kind==='guru'?'':'<input type="number" step="any" inputmode="decimal" id="th_'+r.id+'" value="'+esc(rules.thresholds[r.id])+'" aria-label="'+r.label+' 기준값">';
+    const lab=r.kind==='min'?'이상':r.kind==='max'?'이하':r.kind==='small'?'이하(시총)':'';
+    return '<div class="rule"><div><b>'+r.label+'</b>'+termBtn(r.kind==='small'?'small':r.id)+'<div class="d">'+r.desc+(r.unit?' · 단위 '+r.unit:'')+(lab?' · '+lab:'')+'</div></div><div>'+th+'</div><div><input type="number" step="1" min="0" max="100" inputmode="numeric" id="w_'+r.id+'" value="'+esc(rules.weights[r.id])+'" aria-label="'+r.label+' 가중치"></div></div>';
+  }).join('');
+}
+async function saveRules(){
+  const th={},w={};RULES.forEach(r=>{const t=$('#th_'+r.id);th[r.id]=t?(num(t.value)??DEFAULT_RULES.thresholds[r.id]):1;const ww=$('#w_'+r.id);w[r.id]=Math.max(0,num(ww.value)??0);});
+  if(await write('settings/rules',{thresholds:th,weights:w,updatedAt:new Date().toISOString()}))toast('규칙을 저장했습니다');
+}
+function journalStats(){
+  const done=S.journal.filter(j=>j.outcome&&j.outcome.ret!=null&&j.action!=='관망');
+  const wins=done.filter(j=>j.outcome.ok).length;
+  const avg=done.length?done.reduce((a,j)=>a+Number(j.outcome.ret||0),0)/done.length:null;
+  const per={};RULES.forEach(r=>{const inR=done.filter(j=>(j.hits||[]).includes(r.id));const out=done.filter(j=>!(j.hits||[]).includes(r.id));per[r.id]={n:inR.length,win:inR.filter(j=>j.outcome.ok).length,nOut:out.length,winOut:out.filter(j=>j.outcome.ok).length};});
+  return {n:done.length,wins:wins,winRate:done.length?wins/done.length:null,avg:avg,per:per};
+}
+function renderRuleStats(){
+  const st=journalStats();const el=$('#ruleStats');
+  if(!st.n){el.innerHTML='<div class="empty">결과가 기록된 일지가 아직 없습니다. 기록이 쌓이면 여기에 규칙별 성공률이 나타납니다.</div>';S.suggest=null;$('#btnApplySuggest').disabled=true;return;}
+  const sug={};let any=false;
+  let h='<p class="hint">결과 기록 '+st.n+'건 · 전체 성공률 '+fmt(st.winRate*100,0)+'% · 평균 수익률 '+pct(st.avg,1)+'</p><div class="stat-head"><span>규칙</span><span>만족 건수</span><span>성공률</span><span>제안 가중치</span></div>';
+  RULES.forEach(r=>{const p=st.per[r.id];const cur=Number(S.rules.weights[r.id])||0;let s='—';
+    if(p.n>=3){const hr=p.win/p.n;const lift=hr-st.winRate;const w=Math.max(0,Math.min(40,Math.round(cur*(1+lift*2))));sug[r.id]=w;any=true;s=w+(w!==cur?' <span class="meta">(현재 '+cur+')</span>':'');}
+    h+='<div class="stat"><span class="k">'+r.label+'</span><span class="num">'+p.n+'</span><span class="num">'+(p.n?fmt(p.win/p.n*100,0)+'%':'—')+'</span><span class="num">'+s+'</span></div>';
+  });
+  el.innerHTML=h;S.suggest=any?sug:null;$('#btnApplySuggest').disabled=!any;
+}
+async function applySuggest(){
+  if(!S.suggest)return;const w=Object.assign({},S.rules.weights,S.suggest);
+  if(await write('settings/rules',{thresholds:S.rules.thresholds,weights:w,updatedAt:new Date().toISOString()}))toast('제안 가중치를 적용했습니다');
+}
+
+/* ---------- macro ---------- */
+async function saveMacro(e){
+  e.preventDefault();const f=e.target;const fd=new FormData(f);const d=fd.get('date');if(!d)return;
+  const doc={date:d,sp500:num(fd.get('sp500')),nasdaq:num(fd.get('nasdaq')),us10y:num(fd.get('us10y')),wti:num(fd.get('wti')),vix:num(fd.get('vix')),usdkrw:num(fd.get('usdkrw')),fg:num(fd.get('fg')),risk:num(fd.get('risk'))||3,note:String(fd.get('note')||'').trim(),savedAt:new Date().toISOString()};
+  if(await write('macro/'+d,doc)){toast(fmtDateK(d)+' 스냅샷 저장');f.reset();$('#m_date').value=todayStr();$('#m_risk').value='3';}
+}
+function renderMacro(){
+  const ms=S.macro.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const pts=ms.filter(m=>m.sp500!=null);
+  const ch=$('#macroChart');
+  if(pts.length<2){ch.innerHTML='<div class="empty">스냅샷이 2개 이상 쌓이면 추이를 그립니다'+(pts.length===1?' (현재 1개)':'')+'</div>';$('#chartHint').textContent='';}
+  else{
+    const W=360,H=140,pl=44,pr=10,pt=10,pb=22;const xs=pts.map((p,i)=>pl+i*(W-pl-pr)/(pts.length-1));
+    const vals=pts.map(p=>p.sp500);let lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals);if(hi===lo){hi+=1;lo-=1;}const pad=(hi-lo)*0.15;lo-=pad;hi+=pad;
+    const y=v=>pt+(hi-v)/(hi-lo)*(H-pt-pb);
+    const line=xs.map((x,i)=>(i?'L':'M')+x.toFixed(1)+' '+y(vals[i]).toFixed(1)).join(' ');
+    const area=line+' L'+xs[xs.length-1].toFixed(1)+' '+(H-pb)+' L'+xs[0].toFixed(1)+' '+(H-pb)+' Z';
+    const ticks=[lo+pad,hi-pad].map(v=>'<line class="grid" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(v).toFixed(1)+'" y2="'+y(v).toFixed(1)+'"></line><text x="'+(pl-4)+'" y="'+(y(v)+3).toFixed(1)+'" text-anchor="end">'+Math.round(v)+'</text>').join('');
+    const last=pts[pts.length-1];
+    ch.innerHTML='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="S&P 500 추이">'+ticks+'<path class="area" d="'+area+'"></path><path class="ln" d="'+line+'"></path><circle class="pt" r="3.5" cx="'+xs[xs.length-1].toFixed(1)+'" cy="'+y(last.sp500).toFixed(1)+'"></circle><text x="'+xs[0].toFixed(1)+'" y="'+(H-6)+'">'+pts[0].date.slice(5)+'</text><text x="'+xs[xs.length-1].toFixed(1)+'" y="'+(H-6)+'" text-anchor="end">'+last.date.slice(5)+'</text></svg>';
+    $('#chartHint').textContent=pts.length+'개 스냅샷';
+  }
+  // events
+  const ev=$('#eventList');
+  ev.innerHTML=S.events.length?S.events.map(e=>'<div class="ev"><div class="h"><b>'+esc(e.title)+'</b><span class="meta num">'+esc(e.date)+'</span></div><div class="b"><span class="tag">'+esc(e.type||'기타')+'</span> '+esc(e.note||'')+'</div><div class="btn-row"><button class="btn small" data-ev="'+esc(e.id)+'">사건 전 30일 보기</button><button class="btn small ghost" data-evdel="'+esc(e.id)+'">삭제</button></div></div>').join(''):'<div class="empty">기록된 사건이 없습니다. 전쟁·정책 급변·급락일 등을 남겨 두세요.</div>';
+  $$('#eventList [data-ev]').forEach(b=>b.addEventListener('click',()=>{S.openEvent=S.openEvent===b.dataset.ev?null:b.dataset.ev;renderMacro();}));
+  $$('#eventList [data-evdel]').forEach(b=>b.addEventListener('click',async()=>{if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말 삭제';return;}if(await remove('events/'+b.dataset.evdel))toast('사건을 삭제했습니다');}));
+  const det=$('#eventDetail');
+  const oe=S.events.find(e=>e.id===S.openEvent);
+  if(oe){const before=ms.filter(m=>{const d=daysBetween(m.date,oe.date);return d>=0&&d<=30;});det.innerHTML='<div class="card"><div class="meta">'+esc(oe.title)+' 이전 30일 스냅샷 '+before.length+'개</div>'+(before.length?macroTable(before.slice().reverse()):'<p class="hint">이 기간의 스냅샷이 없습니다</p>')+'</div>';}
+  else det.innerHTML='';
+  $('#macroTable').innerHTML=S.macro.length?macroTable(S.macro.slice(0,40),true):'<tr><td class="hint">스냅샷이 없습니다</td></tr>';
+  $$('#macroTable [data-mdel]').forEach(b=>b.addEventListener('click',async()=>{if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말';return;}if(await remove('macro/'+b.dataset.mdel))toast('삭제했습니다');}));
+}
+function macroTable(rows,del){
+  return '<table class="table"><tr><th>날짜</th><th class="r">S&amp;P</th><th class="r">10Y</th><th class="r">WTI</th><th class="r">VIX</th><th class="r">공탐</th><th class="r">위험</th>'+(del?'<th></th>':'')+'</tr>'+rows.map(m=>'<tr><td class="num">'+esc(m.date.slice(5))+'</td><td class="r num">'+fmt(m.sp500,0)+'</td><td class="r num">'+(m.us10y!=null?fmt(m.us10y,2):'—')+'</td><td class="r num">'+(m.wti!=null?fmt(m.wti,0):'—')+'</td><td class="r num">'+(m.vix!=null?fmt(m.vix,1):'—')+'</td><td class="r num">'+(m.fg!=null?fmt(m.fg,0):'—')+'</td><td class="r num">'+(m.risk||'—')+'</td>'+(del?'<td class="r"><button class="btn small ghost" data-mdel="'+esc(m.date)+'">지움</button></td>':'')+'</tr>'+(m.note?'<tr><td colspan="'+(del?8:7)+'" class="hint">'+esc(m.note)+'</td></tr>':'')).join('')+'</table>';
+}
+
+/* ---------- journal ---------- */
+function renderJournal(){
+  const st=journalStats();
+  $('#journalStats').innerHTML='<div><div class="k">기록</div><div class="v num">'+S.journal.length+'</div></div><div><div class="k">결과 성공률</div><div class="v num">'+(st.winRate==null?'—':fmt(st.winRate*100,0)+'%')+'</div></div><div><div class="k">평균 수익률</div><div class="v num">'+(st.avg==null?'—':pct(st.avg,1))+'</div></div>';
+  const el=$('#journalList');
+  if(!S.journal.length){el.innerHTML='<div class="empty">'+(S.loaded.journal?'아직 기록이 없습니다. 첫 결정을 남겨 보세요.':'불러오는 중')+'</div>';return;}
+  el.innerHTML=S.journal.map(j=>{
+    const o=j.outcome;
+    return '<article class="card jr"><div class="h"><b>'+esc(j.ticker)+' · '+esc(j.action)+'</b><span class="meta num">'+esc(j.date)+'</span></div>'+
+      '<div class="m">'+(j.price!=null?'$'+fmt(j.price,2):'')+(j.qty!=null?' × '+fmt(j.qty,0)+'주':'')+(j.score!=null?' · 기록 당시 점수 '+j.score:'')+'</div>'+
+      ((j.hits||[]).length?'<div class="tags">'+j.hits.map(h=>'<span class="tag hit">'+esc(ruleLabel(h))+'</span>').join('')+'</div>':'')+
+      (j.note?'<p>'+esc(j.note)+'</p>':'')+
+      '<div class="o">'+(o?'<span>결과 '+esc(o.date||'')+' · <b class="'+(o.ok?'up':'down')+' num">'+pct(o.ret,1)+'</b> '+(o.ok?'<span class="pill good">성공</span>':'<span class="pill bad">실패</span>')+(o.note?' <span class="meta">'+esc(o.note)+'</span>':'')+'</span>':'<span class="meta">'+(j.action==='관망'?'관망 기록':'결과 미기록')+'</span>')+
+      '<span class="btn-row"><button class="btn small" data-jo="'+esc(j.id)+'">'+(o?'결과 수정':'결과 입력')+'</button><button class="btn small ghost" data-jdel="'+esc(j.id)+'">삭제</button></span></div></article>';
+  }).join('');
+  $$('#journalList [data-jo]').forEach(b=>b.addEventListener('click',()=>openOutcomeSheet(b.dataset.jo)));
+  $$('#journalList [data-jdel]').forEach(b=>b.addEventListener('click',async()=>{if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말 삭제';return;}if(await remove('journal/'+b.dataset.jdel))toast('기록을 삭제했습니다');}));
+}
+
+function renderSettings(){
+  const b=S.briefs[0];
+  $('#updateStatus').textContent=(b?'최근 브리프: '+b.date+(b.createdBy==='claude'?' (Claude 작성)':''):'아직 브리프가 없습니다.')+(S.remoteAt?' · 공유 데이터 갱신: '+S.remoteAt.slice(0,10):S.remoteErr?' · 공유 데이터 파일을 읽지 못했습니다':'');
+  $('#dataStatus').innerHTML='<span class="dot '+(S.dbState==='ok'?'ok':'bad')+'"></span><span>'+(S.dbState==='ok'?'저장소 연결됨 · 종목 '+S.stocks.length+' · 대가 '+S.gurus.length+' · 스냅샷 '+S.macro.length+' · 일지 '+S.journal.length:'저장소 미연결')+'</span>';
+}
+
+/* ---------- sheets ---------- */
+function openSheet(title,html){$('#sheetTitle').textContent=title;$('#sheetBody').innerHTML=html;$('#sheet').hidden=false;const f=$('#sheetBody input,#sheetBody select,#sheetBody textarea');if(f)setTimeout(()=>f.focus(),50);}
+function closeSheet(){$('#sheet').hidden=true;$('#sheetBody').innerHTML='';}
+function field(label,inner){return '<div class="field"><label>'+label+'</label>'+inner+'</div>';}
+function inp(name,val,type,extra){return '<input name="'+name+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'>';}
+function numInp(name,val,step){return inp(name,val,'number','step="'+(step||'any')+'" inputmode="decimal"');}
+
+function openStockSheet(ticker,preset){
+  const s=ticker?S.stocks.find(x=>x.ticker===ticker):null;const p=preset||{};
+  const v=s||{ticker:p.ticker||'',name:p.name||'',sector:SECTORS[0],verified:false,asOf:''};
+  openSheet(s?s.ticker+' · '+(s.name||''):'종목 추가',
+    (s?'<div class="block" style="margin-bottom:14px">'+(s.desc?'<p><b>어떤 회사인가</b><br>'+esc(s.desc)+'</p>':'')+(s.note?'<p class="hint">'+esc(s.note)+'</p>':'')+'<h3>숫자가 뜻하는 것</h3>'+interpretStock(s)+(s.verified?'':'<p class="hint">아래 숫자는 아직 공시와 대조하지 않은 참고값입니다. 확인했다면 "확인됨"에 체크하세요.</p>')+'<h3 style="margin-top:6px">수치 수정</h3></div>':'')+
+    '<form class="form" id="stockForm">'+
+    '<div class="grid2">'+field('티커'+termBtn('ticker'),inp('ticker',v.ticker,'text',s?'readonly':'required placeholder="예: NVDA" style="text-transform:uppercase"'))+field('회사명',inp('name',v.name,'text','placeholder="예: 엔비디아"'))+'</div>'+
+    field('어떤 회사인지 한 줄 (무엇을 팔아 돈을 버는지)','<textarea name="desc" rows="2" placeholder="예: AI 계산에 쓰이는 GPU 칩을 설계해 파는 회사. 매출 대부분이 데이터센터용 칩">'+esc(v.desc||'')+'</textarea>')+
+    field('분야'+termBtn('sector'),'<select name="sector">'+SECTORS.map(x=>'<option '+(x===v.sector?'selected':'')+'>'+x+'</option>').join('')+'</select>')+
+    '<div class="grid3">'+field('시가총액 (십억$)'+termBtn('mcap'),numInp('mcap',v.mcap))+field('영업이익률 %'+termBtn('opm'),numInp('opm',v.opm))+field('매출 성장률 %'+termBtn('growth'),numInp('growth',v.growth))+'</div>'+
+    '<div class="grid3">'+field('ROE %'+termBtn('roe'),numInp('roe',v.roe))+field('부채비율 %'+termBtn('de'),numInp('de',v.de))+field('PER (배)'+termBtn('per'),numInp('per',v.per))+'</div>'+
+    '<div class="grid2">'+field('수치 기준 (예: FY2025, 2026-10)'+termBtn('fy'),inp('asOf',v.asOf))+'<label class="check" style="align-self:end"><input type="checkbox" name="verified" '+(v.verified?'checked':'')+'> 공시와 대조해 확인됨'+termBtn('verified')+'</label></div>'+
+    field('메모','<textarea name="note" rows="2">'+esc(v.note||'')+'</textarea>')+
+    '<div class="btn-row"><button class="btn primary" type="submit">저장</button>'+(s?'<button class="btn danger" type="button" id="stockDel">삭제</button>':'')+'</div></form>');
+  $('#stockForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const t=normT(fd.get('ticker'));if(!t)return;
+    const doc={ticker:t,name:String(fd.get('name')||'').trim(),desc:String(fd.get('desc')||'').trim(),sector:fd.get('sector'),mcap:num(fd.get('mcap')),opm:num(fd.get('opm')),growth:num(fd.get('growth')),roe:num(fd.get('roe')),de:num(fd.get('de')),per:num(fd.get('per')),asOf:String(fd.get('asOf')||'').trim(),verified:fd.get('verified')==='on',note:String(fd.get('note')||'').trim(),updatedAt:new Date().toISOString()};
+    if(await write('stocks/'+t,doc)){toast(t+' 저장');closeSheet();}});
+  const del=$('#stockDel');if(del)del.addEventListener('click',async()=>{if(del.dataset.c!=='1'){del.dataset.c='1';del.textContent='정말 삭제';return;}if(await remove('stocks/'+s.ticker)){toast(s.ticker+' 삭제');closeSheet();}});
+}
+
+function openGuruSheet(id){
+  const g=id?S.gurus.find(x=>x.id===id):null;const v=g||{name:'',firm:'',quarter:'',filed:'',holdings:[],source:'',note:''};
+  const txt=(v.holdings||[]).map(h=>h.t+' '+(h.w!=null?h.w:'')+(h.n?' '+h.n:'')).join('\n');
+  openSheet(g?g.name+' 편집':'대가 추가',
+    '<form class="form" id="guruForm">'+
+    '<div class="grid2">'+field('이름',inp('name',v.name,'text','required placeholder="예: 워런 버핏"'))+field('운용사',inp('firm',v.firm,'text','placeholder="예: 버크셔 해서웨이"'))+'</div>'+
+    '<div class="grid2">'+field('기준 분기',inp('quarter',v.quarter,'text','placeholder="예: 2026 Q2"'))+field('공시일',inp('filed',v.filed,'text','placeholder="예: 2026-08-14"'))+'</div>'+
+    field('보유 종목 (한 줄에 하나: 티커 비중% 메모)','<textarea name="holdings" rows="8" placeholder="AAPL 22.0 애플\nAXP 17.1 아메리칸익스프레스">'+esc(txt)+'</textarea>')+
+    field('출처',inp('source',v.source,'text','placeholder="예: SEC 13F, KB증권 앱"'))+
+    field('메모','<textarea name="note" rows="2">'+esc(v.note||'')+'</textarea>')+
+    '<div class="btn-row"><button class="btn primary" type="submit">저장</button>'+(g?'<button class="btn danger" type="button" id="guruDel">삭제</button>':'')+'</div></form>');
+  $('#guruForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const name=String(fd.get('name')||'').trim();if(!name)return;
+    const hs=String(fd.get('holdings')||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split(/\s+/);const o={t:normT(p[0])};const w=num(p[1]);if(w!=null){o.w=w;if(p.length>2)o.n=p.slice(2).join(' ');}else if(p.length>1)o.n=p.slice(1).join(' ');return o;});
+    const gid=g?g.id:('g_'+Date.now().toString(36));
+    const doc={id:gid,name:name,firm:String(fd.get('firm')||'').trim(),quarter:String(fd.get('quarter')||'').trim(),filed:String(fd.get('filed')||'').trim(),holdings:hs,source:String(fd.get('source')||'').trim(),note:String(fd.get('note')||'').trim(),updatedAt:new Date().toISOString()};
+    if(await write('gurus/'+gid,doc)){toast(name+' 저장');closeSheet();}});
+  const del=$('#guruDel');if(del)del.addEventListener('click',async()=>{if(del.dataset.c!=='1'){del.dataset.c='1';del.textContent='정말 삭제';return;}if(await remove('gurus/'+g.id)){toast('삭제했습니다');closeSheet();}});
+}
+
+function openEventSheet(){
+  openSheet('사건 추가','<form class="form" id="eventForm">'+
+    '<div class="grid2">'+field('날짜',inp('date',todayStr(),'date','required'))+field('유형','<select name="type"><option>전쟁·지정학</option><option>정치·정책</option><option>금리·통화</option><option>급락·급등</option><option>기타</option></select>')+'</div>'+
+    field('제목',inp('title','','text','required placeholder="예: 중동 긴장 고조로 유가 급등"'))+
+    field('메모','<textarea name="note" rows="3" placeholder="무슨 일이 있었고, 직전 분위기는 어땠는지"></textarea>')+
+    '<div class="btn-row"><button class="btn primary" type="submit">저장</button></div></form>');
+  $('#eventForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const id='e_'+Date.now().toString(36);
+    const doc={date:fd.get('date'),type:fd.get('type'),title:String(fd.get('title')||'').trim(),note:String(fd.get('note')||'').trim(),createdAt:new Date().toISOString()};
+    if(await write('events/'+id,doc)){toast('사건을 기록했습니다');closeSheet();}});
+}
+
+function openJournalSheet(){
+  const opts=S.stocks.map(s=>s.ticker).sort();
+  openSheet('일지 기록 추가','<form class="form" id="journalForm">'+
+    '<div class="grid2">'+field('날짜',inp('date',todayStr(),'date','required'))+field('결정','<select name="action">'+ACTIONS.map(a=>'<option>'+a+'</option>').join('')+'</select>')+'</div>'+
+    '<div class="grid2">'+field('종목','<select name="ticker">'+opts.map(t=>'<option>'+t+'</option>').join('')+'<option value="">직접 입력</option></select>')+field('직접 입력 티커',inp('tickerFree','','text','placeholder="목록에 없을 때"'))+'</div>'+
+    '<div class="grid2">'+field('가격 $',numInp('price',''))+field('수량 (주)',numInp('qty','','1'))+'</div>'+
+    field('이유·메모','<textarea name="note" rows="3" placeholder="왜 이 결정을 했는지. 나중에 결과와 비교할 때 가장 중요한 부분"></textarea>')+
+    '<p class="hint">저장하는 순간의 규칙 점수와 만족한 규칙이 자동으로 함께 기록됩니다.</p>'+
+    '<div class="btn-row"><button class="btn primary" type="submit">저장</button></div></form>');
+  $('#journalForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const t=normT(fd.get('tickerFree')||fd.get('ticker'));if(!t){toast('종목을 선택하거나 입력하세요');return;}
+    const st=S.stocks.find(s=>s.ticker===t);const sc=st?scoreStock(st,S.rules,guruSet()):{score:null,hits:[]};const id='j_'+Date.now().toString(36);
+    const doc={date:fd.get('date'),ticker:t,action:fd.get('action'),price:num(fd.get('price')),qty:num(fd.get('qty')),note:String(fd.get('note')||'').trim(),score:sc.score,hits:sc.hits,rulesAt:S.rules,outcome:null,createdAt:new Date().toISOString()};
+    if(await write('journal/'+id,doc)){toast('일지에 기록했습니다');closeSheet();}});
+}
+
+function openOutcomeSheet(id){
+  const j=S.journal.find(x=>x.id===id);if(!j)return;const o=j.outcome||{};
+  openSheet(j.ticker+' 결과 입력','<form class="form" id="outcomeForm">'+
+    '<div class="grid2">'+field('결과 확인일',inp('date',o.date||todayStr(),'date','required'))+field('수익률 % (기록 시점 대비)',numInp('ret',o.ret))+'</div>'+
+    field('판정','<select name="ok"><option value="auto" '+(o.ok==null?'selected':'')+'>자동 (수익률 0% 이상이면 성공)</option><option value="1" '+(o.ok===true?'selected':'')+'>성공</option><option value="0" '+(o.ok===false?'selected':'')+'>실패</option></select>')+
+    field('메모','<textarea name="note" rows="2">'+esc(o.note||'')+'</textarea>')+
+    '<div class="btn-row"><button class="btn primary" type="submit">저장</button>'+(j.outcome?'<button class="btn ghost" type="button" id="outcomeClear">결과 지우기</button>':'')+'</div></form>');
+  $('#outcomeForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const ret=num(fd.get('ret'));if(ret==null){toast('수익률을 입력하세요');return;}
+    const okv=fd.get('ok');const ok=okv==='auto'?ret>=0:okv==='1';
+    if(await write('journal/'+id,{outcome:{date:fd.get('date'),ret:ret,ok:ok,note:String(fd.get('note')||'').trim()}},true)){toast('결과를 저장했습니다');closeSheet();}});
+  const c=$('#outcomeClear');if(c)c.addEventListener('click',async()=>{if(await write('journal/'+id,{outcome:null},true)){toast('결과를 지웠습니다');closeSheet();}});
+}
+
+/* ---------- ask Claude ---------- */
+function buildPrompt(kind){
+  const b=S.briefs[0],m=S.macro[0];const top=scoredStocks().slice(0,8);const st=journalStats();
+  const rulesTxt=RULES.map(r=>r.label+(r.kind==='guru'?'':' '+(r.kind==='max'||r.kind==='small'?'≤':'≥')+' '+S.rules.thresholds[r.id]+(r.unit||''))+' (가중치 '+S.rules.weights[r.id]+')').join('; ');
+  const topTxt=top.map(s=>s.ticker+'('+(s.name||'')+', '+(s.sector||'')+(s.desc?'; '+s.desc:'')+') 점수 '+s.score+' | 시총 '+mcapStr(s.mcap)+', 영업이익률 '+(s.opm??'—')+'%, 성장 '+(s.growth??'—')+'%, ROE '+(s.roe??'—')+'%, 부채비율 '+(s.de??'—')+'%, PER '+(s.per??'—')+(s.verified?'':' [참고값]')).join('\n');
+  const briefTxt=b?('날짜 '+b.date+'. '+(b.headline||'')+' S&P500 '+fmt(b.idx&&b.idx.sp500,0)+'('+pct(b.idx&&b.idx.sp500d,2)+', 주간 '+pct(b.idx&&b.idx.sp500w,2)+'), 나스닥 '+pct(b.idx&&b.idx.nasdaqd,2)+'(주간 '+pct(b.idx&&b.idx.nasdaqw,2)+'), 10년물 '+(b.us10y??'—')+'%, WTI $'+(b.wti??'—')+', 공포탐욕 '+(b.fg??'—')+'. 주제: '+(b.themes||[]).join(' / ')):'브리프 없음';
+  const macroTxt=m?('날짜 '+m.date+' S&P500 '+(m.sp500??'—')+', 10년물 '+(m.us10y??'—')+'%, WTI '+(m.wti??'—')+', VIX '+(m.vix??'—')+', 공포탐욕 '+(m.fg??'—')+', 내 위험도 '+(m.risk??'—')+'/5. 메모: '+(m.note||'')):'스냅샷 없음';
+  const gurusTxt=S.gurus.map(g=>g.name+'('+g.quarter+'): '+(g.holdings||[]).slice(0,6).map(h=>h.t+' '+(h.w!=null?h.w+'%':'')).join(', ')).join('\n');
+  const head='당신은 미국 주식 장기투자를 공부하는 개인 투자자의 기록 도우미입니다. 매수·매도 지시나 특정 종목 추천은 하지 말고, 아래 데이터를 바탕으로 점검 포인트를 정리해 주세요. 상대는 주식 초보자이니 어려운 용어는 괄호 안에 쉬운 말로 짧게 풀어 쓰세요. 한국어로, 담담한 문체로, 700자 이내. 마지막 줄에 "투자 판단과 책임은 본인에게 있습니다."를 넣으세요.\n\n';
+  if(kind==='review'){
+    const statTxt=st.n?('결과 기록 '+st.n+'건, 성공률 '+fmt(st.winRate*100,0)+'%, 평균 수익률 '+pct(st.avg,1)+'. 규칙별: '+RULES.map(r=>r.label+' 만족 '+st.per[r.id].n+'건 중 성공 '+st.per[r.id].win).join(', ')):'결과 기록 없음';
+    return head+'[현재 규칙]\n'+rulesTxt+'\n\n[일지 통계]\n'+statTxt+'\n\n[관심종목 상위]\n'+topTxt+'\n\n요청: 1) 이 규칙 조합이 장기투자 후보를 고를 때 놓치기 쉬운 점 2~3가지, 2) 추가로 보면 좋을 지표 2가지와 이유, 3) 일지 통계가 충분히 쌓였다면 가중치 조정에 대한 의견, 아니면 몇 건이 더 필요한지. 번호 목록으로.';
+  }
+  return head+'[오늘의 브리프]\n'+briefTxt+'\n\n[최근 거시 스냅샷]\n'+macroTxt+'\n\n[나의 규칙]\n'+rulesTxt+'\n\n[규칙 점수 상위 관심종목]\n'+topTxt+'\n\n[대가 포트폴리오 요약]\n'+(gurusTxt||'없음')+'\n\n요청: 1) 오늘 시장 상황이 장기투자자에게 뜻하는 바 2~3줄, 2) 상위 후보 중 수치 확인이나 추가 조사가 필요한 항목 3가지(어떤 지표를 왜 확인할지), 3) 지금 기록해 둘 만한 거시 리스크 신호 2가지. 번호 목록으로.';
+}
+async function askClaude(kind){
+  if(!S.sample)return;
+  const out=$(kind==='review'?'#reviewOut':'#explainOut'),btn=$(kind==='review'?'#btnReview':'#btnExplain'),stop=$(kind==='review'?'#btnReviewStop':'#btnStop');
+  S.ctl=new AbortController();out.hidden=false;out.textContent='생각하는 중…';btn.disabled=true;stop.hidden=false;
+  try{const r=await S.sample(buildPrompt(kind),{signal:S.ctl.signal,cache:false,onText:u=>{out.textContent=u.text;}});if(r.truncated)out.textContent+='\n\n(답변이 길어 잘렸습니다)';}
+  catch(e){const c=e&&e.code;if(c==='cancelled'){out.textContent=(e.text||'')+'\n(중지됨)';}else if(c==='not_granted'||c==='sampling_disabled'||c==='not_declared'||c==='capability_disabled'){out.textContent='이 화면에서는 Claude 호출이 허용되지 않았습니다.';S.sample=null;btn.hidden=true;}else if(c==='rate_limited'){out.textContent='호출이 잦거나 사용량 한도에 닿았습니다. 잠시 후 다시 시도하세요.';}else if(c==='refused'){out.textContent='요청이 거절되었습니다. 입력 데이터를 바꿔 다시 시도하세요.';}else{out.textContent=(e&&e.text?e.text+'\n\n':'')+'연결이 끊겼습니다. 다시 시도하세요.';}}
+  finally{btn.disabled=false;stop.hidden=true;S.ctl=null;}
+}
+
+/* ---------- GitHub 버전: 이 기기 저장소 ---------- */
+const SEED={"stocks": {"BRK.B": {"asOf": "FY2025 참고값", "de": 25, "desc": "워런 버핏의 지주회사. 보험·철도·에너지 회사를 직접 소유하고 애플·코카콜라 같은 주식을 보유. 2026년부터 그레그 아벨이 CEO.", "growth": 5, "mcap": 1000, "name": "버크셔 해서웨이", "note": "지주회사: 지표보다 보유 포트폴리오를 볼 것", "opm": 15, "per": 20, "roe": 10, "sector": "금융", "ticker": "BRK.B", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "AAPL": {"asOf": "FY2025 참고값", "de": 150, "desc": "아이폰·맥·에어팟을 파는 회사. 매출 절반이 아이폰이고, 앱스토어·아이클라우드 같은 서비스 매출이 이익을 떠받침.", "growth": 6, "mcap": 4800, "name": "애플", "note": "자사주 매입으로 자본이 작아 ROE·부채비율이 높게 나옴", "opm": 32, "per": 36, "roe": 150, "sector": "소프트웨어·플랫폼", "ticker": "AAPL", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "AVGO": {"asOf": "FY2025 참고값", "de": 95, "desc": "통신·데이터센터용 반도체와 기업용 소프트웨어(VM웨어)를 함께 파는 회사. 구글 같은 빅테크의 맞춤형 AI 칩도 만들어 줌.", "growth": 22, "mcap": 1600, "name": "브로드컴", "note": "", "opm": 38, "per": 42, "roe": 25, "sector": "AI·반도체", "ticker": "AVGO", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "CVX": {"asOf": "FY2025 참고값", "de": 15, "desc": "엑슨모빌에 이은 미국 2위 석유회사. 버핏이 오래 들고 있는 종목이며 배당을 꾸준히 올려 옴.", "growth": -2, "mcap": 300, "name": "셰브론", "note": "", "opm": 10, "per": 18, "roe": 9, "sector": "에너지", "ticker": "CVX", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "ISRG": {"asOf": "FY2025 참고값", "de": 0, "desc": "수술 로봇 다빈치를 만드는 회사. 로봇을 팔고 나면 소모품·유지보수로 계속 돈이 들어오는 구조.", "growth": 20, "mcap": 180, "name": "인튜이티브 서지컬", "note": "수술 로봇", "opm": 28, "per": 60, "roe": 15, "sector": "헬스케어", "ticker": "ISRG", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "MRK": {"asOf": "FY2025 참고값", "de": 70, "desc": "항암제 키트루다로 매출 절반을 버는 제약회사. 2028년 특허 만료가 다가와 다음 약을 찾는 중.", "growth": 2, "mcap": 200, "name": "머크", "note": "키트루다 특허 만료 이슈", "opm": 30, "per": 10, "roe": 30, "sector": "헬스케어", "ticker": "MRK", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "LLY": {"asOf": "FY2025 참고값", "de": 200, "desc": "비만·당뇨 치료제(마운자로·젭바운드)로 급성장한 제약회사. 미국 헬스케어 시가총액 1위.", "growth": 35, "mcap": 800, "name": "일라이릴리", "note": "비만·당뇨 치료제", "opm": 42, "per": 40, "roe": 80, "sector": "헬스케어", "ticker": "LLY", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "NVDA": {"asOf": "FY2025 참고값", "de": 10, "desc": "AI 계산에 쓰이는 GPU 칩을 설계해 파는 회사. 매출 대부분이 데이터센터용 AI 칩이라 AI 투자 열기의 중심에 있음.", "growth": 55, "mcap": 4500, "name": "엔비디아", "note": "", "opm": 60, "per": 40, "roe": 100, "sector": "AI·반도체", "ticker": "NVDA", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "META": {"asOf": "FY2025 참고값", "de": 25, "desc": "페이스북·인스타그램·왓츠앱 회사. 매출의 거의 전부가 광고이며, AI와 스마트 안경에 큰돈을 투자 중.", "growth": 20, "mcap": 1800, "name": "메타", "note": "", "opm": 42, "per": 25, "roe": 35, "sector": "소프트웨어·플랫폼", "ticker": "META", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "GOOGL": {"asOf": "FY2025 참고값", "de": 7, "desc": "구글 검색·유튜브·안드로이드를 가진 회사. 돈은 대부분 광고에서 벌고, 클라우드와 자체 AI 칩(TPU)도 키우는 중.", "growth": 14, "mcap": 3500, "name": "알파벳", "note": "", "opm": 33, "per": 26, "roe": 32, "sector": "소프트웨어·플랫폼", "ticker": "GOOGL", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "ORCL": {"asOf": "FY2025 참고값", "de": 400, "desc": "기업용 데이터베이스와 클라우드를 파는 회사. AI 데이터센터를 빌려주는 사업을 키우느라 투자와 빚이 급격히 늘고 있음.", "growth": 12, "mcap": 650, "name": "오라클", "note": "데이터센터 투자로 부채 급증", "opm": 32, "per": 45, "roe": 90, "sector": "소프트웨어·플랫폼", "ticker": "ORCL", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "CEG": {"asOf": "FY2025 참고값", "de": 70, "desc": "미국 최대 원자력 발전 회사. 데이터센터가 24시간 안정적인 전기를 원하면서 원전 전기 장기계약을 따내고 있음.", "growth": 5, "mcap": 100, "name": "컨스텔레이션 에너지", "note": "원전 발전", "opm": 15, "per": 30, "roe": 25, "sector": "에너지", "ticker": "CEG", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "MA": {"asOf": "FY2025 참고값", "de": 250, "desc": "비자의 경쟁사. 사업 구조가 같아 결제가 늘면 같이 성장하고, 신흥국 비중이 비자보다 큼.", "growth": 13, "mcap": 500, "name": "마스터카드", "note": "자사주 매입으로 자본이 작음", "opm": 58, "per": 35, "roe": 190, "sector": "금융", "ticker": "MA", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "LYB": {"asOf": "FY2025 참고값", "de": 95, "desc": "플라스틱 원료(폴리에틸렌 등)를 만드는 석유화학 회사. 다우처럼 업황 바닥을 지나는 중이며 배당이 높음.", "growth": -5, "mcap": 20, "name": "라이온델바젤", "note": "", "opm": 4, "per": 20, "roe": 5, "sector": "석유화학·소재", "ticker": "LYB", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "COP": {"asOf": "FY2025 참고값", "de": 35, "desc": "정유소 없이 원유·가스를 캐는 일에만 집중하는 회사. 그래서 유가에 더 직접 반응하고, 이익률이 통합 석유회사보다 높음.", "growth": 0, "mcap": 130, "name": "코노코필립스", "note": "", "opm": 20, "per": 13, "roe": 15, "sector": "에너지", "ticker": "COP", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "GEV": {"asOf": "FY2025 참고값", "de": 5, "desc": "GE에서 떨어져 나온 발전설비 회사. 가스터빈·풍력·송전설비를 만들며, AI 데이터센터의 전력 수요 급증으로 주문이 밀려 있음.", "growth": 10, "mcap": 180, "name": "GE 버노바", "note": "전력설비. 이익률은 낮지만 수주 증가", "opm": 8, "per": 50, "roe": 15, "sector": "에너지", "ticker": "GEV", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "JPM": {"asOf": "FY2025 참고값", "de": null, "desc": "미국 최대 은행. 예금·대출·카드·투자은행을 다 하며, 금리가 높을 때 대출 이자로 돈을 많이 벎.", "growth": 8, "mcap": 800, "name": "JP모건", "note": "은행: 영업이익률·부채비율 대신 ROE·PER 위주로 보기", "opm": null, "per": 14, "roe": 17, "sector": "금융", "ticker": "JPM", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "WMT": {"asOf": "FY2025 참고값", "de": 60, "desc": "미국 최대 유통회사. 매장 4,600곳과 온라인을 합쳐 미국인 대부분이 매주 들르는 곳. 광고·멤버십으로 이익을 늘리는 중.", "growth": 5, "mcap": 800, "name": "월마트", "note": "", "opm": 4.2, "per": 40, "roe": 20, "sector": "소비재", "ticker": "WMT", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "LIN": {"asOf": "FY2025 참고값", "de": 50, "desc": "산소·질소·수소 같은 산업용 가스를 공장·병원에 공급하는 세계 1위 회사. 한 번 계약하면 수십 년 가서 이익이 안정적.", "growth": 3, "mcap": 210, "name": "린데", "note": "산업가스", "opm": 27, "per": 30, "roe": 17, "sector": "석유화학·소재", "ticker": "LIN", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "XOM": {"asOf": "FY2025 참고값", "de": 15, "desc": "미국 최대 석유·가스 회사. 원유를 캐고 정제해 팔기 때문에 유가가 오르면 이익이 늘고, 내리면 줄어듦.", "growth": -3, "mcap": 500, "name": "엑슨모빌", "note": "", "opm": 13, "per": 15, "roe": 13, "sector": "에너지", "ticker": "XOM", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "DOW": {"asOf": "FY2025 참고값", "de": 110, "desc": "플라스틱·화학 원료를 만드는 대형 석유화학 회사. 세계 공급 과잉으로 몇 년째 업황이 바닥.", "growth": -5, "mcap": 20, "name": "다우", "note": "석유화학 업황 바닥 구간", "opm": 2, "per": null, "roe": -5, "sector": "석유화학·소재", "ticker": "DOW", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "F": {"asOf": "FY2025 참고값", "de": 350, "desc": "픽업트럭 F-150이 간판인 자동차 회사. 자동차 할부 금융 자회사 때문에 부채가 커 보이고, 이익률은 낮은 편.", "growth": 2, "mcap": 45, "name": "포드", "note": "금융 자회사 포함 부채", "opm": 3, "per": 10, "roe": 10, "sector": "자동차", "ticker": "F", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "UNH": {"asOf": "FY2025 참고값", "de": 85, "desc": "미국 최대 건강보험 회사. 보험료를 받아 병원비를 내주는 구조라 이익률은 낮고, 의료비 급증과 규제가 변수.", "growth": 10, "mcap": 300, "name": "유나이티드헬스", "note": "보험: 이익률 낮은 업종", "opm": 5, "per": 15, "roe": 12, "sector": "헬스케어", "ticker": "UNH", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "CAT": {"asOf": "FY2025 참고값", "de": 200, "desc": "건설·광산용 중장비 세계 1위. 경기와 원자재 가격에 따라 실적이 오르내리고, 최근엔 데이터센터용 발전기 수요가 늘어남.", "growth": 0, "mcap": 200, "name": "캐터필러", "note": "", "opm": 18, "per": 20, "roe": 50, "sector": "산업재·방산", "ticker": "CAT", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "MSFT": {"asOf": "FY2025 참고값", "de": 30, "desc": "윈도우·오피스·클라우드(애저)를 파는 회사. 기업 구독료가 매달 꼬박꼬박 들어오고, 오픈AI와 손잡아 AI 서비스도 팖.", "growth": 15, "mcap": 3800, "name": "마이크로소프트", "note": "", "opm": 45, "per": 33, "roe": 33, "sector": "소프트웨어·플랫폼", "ticker": "MSFT", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "PLTR": {"asOf": "FY2025 참고값", "de": 0, "desc": "정부·기업용 데이터 분석 소프트웨어 회사. 미군·정보기관이 주요 고객이었고, 최근 민간 기업용 AI 플랫폼으로 빠르게 성장.", "growth": 50, "mcap": 400, "name": "팔란티어", "note": "성장은 빠르지만 PER이 매우 높음", "opm": 25, "per": 200, "roe": 18, "sector": "소프트웨어·플랫폼", "ticker": "PLTR", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "GM": {"asOf": "FY2025 참고값", "de": 170, "desc": "쉐보레·캐딜락 등을 만드는 미국 최대 자동차 회사. 픽업트럭·SUV에서 돈을 벌고, 전기차 투자는 속도를 늦춤.", "growth": 3, "mcap": 60, "name": "GM", "note": "", "opm": 6, "per": 7, "roe": 13, "sector": "자동차", "ticker": "GM", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "COST": {"asOf": "FY2025 참고값", "de": 25, "desc": "회원제 창고형 마트. 물건은 거의 남기지 않고 팔고 연회비로 이익을 내는 구조라 이익률은 낮지만 매우 꾸준함.", "growth": 7, "mcap": 400, "name": "코스트코", "note": "박리다매: 이익률 낮고 PER 높음", "opm": 3.8, "per": 50, "roe": 30, "sector": "소비재", "ticker": "COST", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "SHW": {"asOf": "FY2025 참고값", "de": 270, "desc": "페인트·코팅제 회사. 전용 매장 5천 곳에서 전문 도장업자에게 직접 팔아 화학회사치고 이익률이 높음.", "growth": 2, "mcap": 90, "name": "셔윈윌리엄스", "note": "페인트·코팅", "opm": 16, "per": 30, "roe": 70, "sector": "석유화학·소재", "ticker": "SHW", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "KO": {"asOf": "FY2025 참고값", "de": 170, "desc": "코카콜라 원액을 팔고 병입·유통은 파트너사가 맡는 구조라 이익률이 높음. 버핏이 1988년부터 보유.", "growth": 4, "mcap": 380, "name": "코카콜라", "note": "", "opm": 30, "per": 28, "roe": 40, "sector": "소비재", "ticker": "KO", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "MU": {"asOf": "FY2025 참고값", "de": 25, "desc": "메모리 반도체(D램·낸드) 회사. 삼성·SK하이닉스와 경쟁하며, AI 서버용 고대역폭메모리(HBM) 수요로 실적이 크게 오르내림.", "growth": 50, "mcap": 250, "name": "마이크론", "note": "메모리 업황에 따라 이익 변동이 큼", "opm": 35, "per": 14, "roe": 22, "sector": "AI·반도체", "ticker": "MU", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "ABBV": {"asOf": "FY2025 참고값", "de": null, "desc": "관절염 치료제 휴미라로 유명한 제약회사. 특허가 끝난 뒤 피부·면역 신약(스카이리치·린보크)으로 교체에 성공.", "growth": 7, "mcap": 350, "name": "애브비", "note": "자본이 마이너스라 ROE·부채비율 계산 불가", "opm": 30, "per": 15, "roe": null, "sector": "헬스케어", "ticker": "ABBV", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "PG": {"asOf": "FY2025 참고값", "de": 65, "desc": "질레트·다우니·팸퍼스 등 생활용품 브랜드 회사. 경기와 무관하게 꾸준히 팔려 배당주의 대표.", "growth": 2, "mcap": 400, "name": "P&G", "note": "", "opm": 24, "per": 25, "roe": 32, "sector": "소비재", "ticker": "PG", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "LMT": {"asOf": "FY2025 참고값", "de": 300, "desc": "F-35 전투기·미사일을 만드는 미국 최대 방산업체. 매출 대부분이 미국 정부 계약이라 안정적이지만 성장은 느림.", "growth": 4, "mcap": 110, "name": "록히드마틴", "note": "", "opm": 10, "per": 18, "roe": 70, "sector": "산업재·방산", "ticker": "LMT", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "APD": {"asOf": "FY2025 참고값", "de": 80, "desc": "린데와 경쟁하는 산업용 가스 회사. 대형 수소·암모니아 프로젝트에 투자하다 비용 문제로 사업을 정리하는 중.", "growth": 2, "mcap": 60, "name": "에어프로덕츠", "note": "산업가스·수소", "opm": 20, "per": 22, "roe": 15, "sector": "석유화학·소재", "ticker": "APD", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "NEE": {"asOf": "FY2025 참고값", "de": 150, "desc": "플로리다 전력회사이자 세계 최대 풍력·태양광 발전 사업자. 전기요금처럼 안정적인 수입이 있지만 발전소를 짓느라 빚이 많음.", "growth": 7, "mcap": 160, "name": "넥스트에라 에너지", "note": "유틸리티: 부채비율이 높은 것이 업종 특성", "opm": 30, "per": 22, "roe": 10, "sector": "에너지", "ticker": "NEE", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "TSLA": {"asOf": "FY2025 참고값", "de": 10, "desc": "전기차와 배터리·태양광을 파는 회사. 자동차 이익은 줄고 있지만 주가는 자율주행 택시와 로봇 기대를 반영해 매우 높음.", "growth": -3, "mcap": 1100, "name": "테슬라", "note": "자동차 이익률 하락, 밸류에이션은 로봇·자율주행 기대", "opm": 6, "per": 180, "roe": 7, "sector": "자동차", "ticker": "TSLA", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "AMZN": {"asOf": "FY2025 참고값", "de": 45, "desc": "온라인 쇼핑과 클라우드(AWS)를 하는 회사. 이익의 큰 몫은 클라우드와 광고에서 나와 소매보다 이익률이 높음.", "growth": 11, "mcap": 2300, "name": "아마존", "note": "", "opm": 11, "per": 35, "roe": 24, "sector": "소프트웨어·플랫폼", "ticker": "AMZN", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "AMD": {"asOf": "FY2025 참고값", "de": 5, "desc": "PC·서버용 CPU와 AI용 GPU를 만드는 엔비디아·인텔의 경쟁사. 가격 대비 성능으로 승부함.", "growth": 25, "mcap": 350, "name": "AMD", "note": "", "opm": 12, "per": 45, "roe": 7, "sector": "AI·반도체", "ticker": "AMD", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "JNJ": {"asOf": "FY2025 참고값", "de": 55, "desc": "의약품·의료기기를 만드는 130년 된 회사. 60년 넘게 배당을 늘려 와 안정형 종목의 대표.", "growth": 5, "mcap": 450, "name": "존슨앤드존슨", "note": "", "opm": 25, "per": 17, "roe": 25, "sector": "헬스케어", "ticker": "JNJ", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "V": {"asOf": "FY2025 참고값", "de": 55, "desc": "비자 카드 결제망 회사. 카드를 발급하거나 돈을 빌려주지 않고 결제 한 건마다 수수료만 받아 이익률이 매우 높음.", "growth": 10, "mcap": 650, "name": "비자", "note": "", "opm": 66, "per": 30, "roe": 50, "sector": "금융", "ticker": "V", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}, "GE": {"asOf": "FY2025 참고값", "de": 50, "desc": "항공기 엔진을 만드는 회사. 엔진을 팔고 나면 수십 년간 정비·부품으로 돈이 들어와 이익률이 높고, 보잉·에어버스 양쪽에 납품.", "growth": 15, "mcap": 300, "name": "GE 에어로스페이스", "note": "", "opm": 20, "per": 40, "roe": 30, "sector": "산업재·방산", "ticker": "GE", "updatedAt": "2026-10-18T13:30:00+09:00", "verified": false}}, "gurus": {"buffett": {"id": "buffett", "name": "워런 버핏", "firm": "버크셔 해서웨이", "quarter": "2026 Q2", "filed": "2026-08-14", "holdings": [{"t": "AAPL", "w": 22.0, "n": "애플"}, {"t": "AXP", "w": 17.1, "n": "아메리칸 익스프레스"}, {"t": "GOOGL", "w": 12.6, "n": "알파벳 (A·C 합산)"}, {"t": "KO", "w": 10.9, "n": "코카콜라"}, {"t": "BAC", "w": 9.2, "n": "뱅크오브아메리카"}, {"t": "CVX", "w": 4.7, "n": "셰브론"}, {"t": "OXY", "w": 4.3, "n": "옥시덴털"}, {"t": "CB", "w": 3.9, "n": "처브"}, {"t": "MCO", "w": 3.7, "n": "무디스"}, {"t": "DAL", "w": 1.8, "n": "델타항공"}], "note": "2분기에 알파벳·델타·레나·DR호튼을 늘리고 BofA·크로거·캐피털원을 줄임. 컨스텔레이션 브랜즈는 전량 매도.", "source": "SEC 13F-HR (2026-08-14) 기준 정리", "updatedAt": "2026-10-18T13:30:00+09:00"}, "ackman": {"id": "ackman", "name": "빌 애크먼", "firm": "퍼싱 스퀘어", "quarter": "2026 Q2", "filed": "2026-08-14", "holdings": [{"t": "UBER", "w": 12.7, "n": "우버"}, {"t": "BN", "w": 12.6, "n": "브룩필드"}, {"t": "MSFT", "w": 11.9, "n": "마이크로소프트"}, {"t": "AMZN", "w": 10.5, "n": "아마존"}, {"t": "HHH", "w": 10.2, "n": "하워드 휴즈"}, {"t": "QSR", "w": 9.6, "n": "레스토랑 브랜즈"}, {"t": "META", "w": 9.2, "n": "메타"}, {"t": "V", "w": 5.8, "n": "비자"}, {"t": "MA", "w": 5.6, "n": "마스터카드"}, {"t": "SPGI", "w": 5.4, "n": "S&P 글로벌"}, {"t": "NFLX", "w": 4.8, "n": "넷플릭스"}], "note": "10여 종목에 집중하는 장기 보유형. 1분기 대비 비자·마스터카드·S&P글로벌·넷플릭스가 새로 들어옴.", "source": "SEC 13F-HR (2026-08-14) 기준 정리", "updatedAt": "2026-10-18T13:30:00+09:00"}, "druckenmiller": {"id": "druckenmiller", "name": "스탠리 드러켄밀러", "firm": "듀케인 패밀리 오피스", "quarter": "2026 Q2", "filed": "2026-08-14", "holdings": [{"t": "NTRA", "w": 19.9, "n": "나테라"}, {"t": "TSM", "w": 6.5, "n": "TSMC"}, {"t": "STM", "w": 5.3, "n": "ST마이크로"}, {"t": "INSM", "w": 3.5, "n": "인스메드"}, {"t": "YPF", "w": 3.3, "n": "YPF (아르헨티나 에너지)"}, {"t": "AMZN", "w": 3.0, "n": "아마존"}, {"t": "GOOGL", "w": 2.8, "n": "알파벳"}, {"t": "EWZ", "w": 2.7, "n": "브라질 ETF"}, {"t": "STX", "w": 2.7, "n": "시게이트"}, {"t": "FOXA", "w": 2.6, "n": "폭스"}], "note": "회전이 빠른 편이라 장기투자 참고로는 상위 비중만 보기.", "source": "SEC 13F-HR (2026-08-14) 기준 정리", "updatedAt": "2026-10-18T13:30:00+09:00"}}, "settings": {"rules": {"thresholds": {"opm": 20, "growth": 10, "roe": 15, "de": 100, "per": 30, "guru": 1, "small": 500}, "weights": {"opm": 25, "growth": 20, "roe": 15, "de": 15, "per": 10, "guru": 10, "small": 15}, "updatedAt": "2026-10-18T13:30:00+09:00"}}, "briefs": {"2026-10-16": {"date": "2026-10-16", "headline": "기술주 매도로 나스닥 주간 -4.5%, 국채금리는 내리고 유가는 $99로 올랐다", "idx": {"sp500": 7659, "sp500d": -1.09, "sp500w": -1.95, "nasdaq": 26140, "nasdaqd": -2.14, "nasdaqw": -4.48, "dow": 52001, "dowd": -0.34, "doww": 0.67}, "us10y": 5.097, "wti": 99.02, "gold": 4181, "fg": 30, "risk": 3, "themes": ["CPI·PPI가 예상을 웃돌면서 연준 금리 인상 가능성이 다시 거론됨", "AI 투자비 부담과 매출 성장 의구심으로 기술주·반도체 약세, 반도체지수는 8일 연속 하락", "동일가중 S&P 500이 기술주 대비 2009년 이후 가장 좋은 한 주, 소재·유틸리티·금융으로 자금 이동", "이란 관련 헤드라인과 흑해 드론 공격 보도로 유가가 9월 중순 이후 최고치", "은행·보험 실적 발표가 시작됐고 결과는 엇갈림"], "watch": ["지수 전체가 아니라 반도체·AI 쏠림이 풀리는 국면인지 확인: 관심종목 중 AI·반도체 비중 점검", "10년물 5% 안팎에서는 부채비율이 높은 기업의 이자 부담을 한 번 더 보기", "유가 $100 근처: 에너지 기업은 이익이 늘지만 석유화학·자동차는 원가 부담"], "source": "Investrade 마켓 리뷰(2026-10-16)와 AP 지수 마감 기사를 요약", "createdBy": "claude", "createdAt": "2026-10-18T13:30:00+09:00"}}, "macro": {"2026-10-16": {"date": "2026-10-16", "sp500": 7659, "nasdaq": 26140, "us10y": 5.097, "wti": 99.02, "vix": null, "usdkrw": null, "fg": 30, "risk": 3, "note": "첫 기록: 브리프에서 옮김. 금리 인상 우려와 유가 상승이 겹친 주. VIX·환율은 직접 입력 필요.", "savedAt": "2026-10-18T13:30:00+09:00"}}};
+function makeLocalDb(){
+  const KEY='ljnote_v1';let store={};
+  try{store=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){store={};}
+  const listeners={};
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+  function notify(c){(listeners[c]||[]).slice().forEach(fn=>{try{fn();}catch(e){}});}
+  function listen(c,fn){listeners[c]=listeners[c]||[];listeners[c].push(fn);setTimeout(fn,0);return ()=>{listeners[c]=(listeners[c]||[]).filter(x=>x!==fn);};}
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  let seeded=false;Object.keys(SEED).forEach(c=>{store[c]=store[c]||{};Object.keys(SEED[c]).forEach(id=>{if(!store[c][id]){store[c][id]=clone(SEED[c][id]);seeded=true;}});});if(seeded)persist();
+  function docRef(path){const p=path.split('/');const id=p[p.length-1],c=p.slice(0,-1).join('/');return {
+    id:id,path:path,
+    get:async()=>{const d=(store[c]||{})[id];return {id:id,exists:!!d,data:()=>d,metadata:{}};},
+    set:async data=>{store[c]=store[c]||{};store[c][id]=clone(data);persist();notify(c);},
+    update:async data=>{const cur=(store[c]||{})[id];if(!cur){const e=new Error('missing');e.code='invalid_argument';throw e;}store[c][id]=Object.assign({},cur,clone(data));persist();notify(c);},
+    delete:async()=>{if(store[c]&&store[c][id]){delete store[c][id];persist();notify(c);}},
+    onSnapshot:next=>listen(c,()=>{const d=(store[c]||{})[id];next({id:id,exists:!!d,data:()=>d,metadata:{}});})
+  };}
+  function query(c,o){
+    const run=()=>{let docs=Object.keys(store[c]||{}).map(id=>({id:id,exists:true,data:()=>store[c][id],metadata:{}}));
+      if(o.ob)docs.sort((a,b)=>{const x=a.data()[o.ob],y=b.data()[o.ob];if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (x<y?-1:x>y?1:0)*(o.dir==='desc'?-1:1);});
+      else docs.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+      if(o.lim)docs=docs.slice(0,o.lim);return {docs:docs,size:docs.length,empty:!docs.length,metadata:{}};};
+    return {path:c,orderBy:(f,d)=>query(c,Object.assign({},o,{ob:f,dir:d||'asc'})),limit:n=>query(c,Object.assign({},o,{lim:n})),doc:id=>docRef(c+'/'+(id||('d_'+Date.now().toString(36)))),get:async()=>run(),onSnapshot:next=>listen(c,()=>next(run()))};
+  }
+  return {local:true,doc:docRef,collection:c=>query(c,{}),
+    _export:()=>JSON.stringify(store),
+    _import:json=>{const o=JSON.parse(json);if(!o||typeof o!=='object'||Array.isArray(o))throw new Error('bad');store=o;persist();Object.keys(listeners).forEach(notify);},
+    _get:(c,id)=>(store[c]||{})[id],
+    _upsert:(c,id,data)=>{store[c]=store[c]||{};store[c][id]=clone(data);persist();},
+    _notify:notify};
+}
+async function loadRemoteUpdates(){
+  if(!S.db||!S.db.local)return;
+  try{
+    const r=await fetch('updates.json',{cache:'no-store'});if(!r.ok)throw new Error(r.status);
+    const u=await r.json();const touched=new Set();
+    ['briefs','macro','gurus'].forEach(c=>{Object.keys(u[c]||{}).forEach(id=>{const cur=S.db._get(c,id);const inc=u[c][id];if(c==='macro'&&cur&&cur.savedAt&&(!inc.savedAt||cur.savedAt>inc.savedAt))return;S.db._upsert(c,id,inc);touched.add(c);});});
+    Object.keys(u.stocks||{}).forEach(id=>{const cur=S.db._get('stocks',id);const inc=u.stocks[id];if(!cur){S.db._upsert('stocks',id,inc);touched.add('stocks');return;}if(cur.verified)return;if(inc.updatedAt&&cur.updatedAt&&inc.updatedAt<=cur.updatedAt)return;S.db._upsert('stocks',id,Object.assign({},cur,inc,{verified:false}));touched.add('stocks');});
+    S.remoteAt=u.generatedAt||'';touched.forEach(c=>S.db._notify(c));render();
+  }catch(e){S.remoteErr=true;render();}
+}
+
+boot();
+})();
+</script>
+
+</body>
+</html>
